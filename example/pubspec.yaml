@@ -17,3 +17,6 @@ dev_dependencies:
     sdk: flutter
 flutter:
   uses-material-design: true
+  # Build iOS plugins with Swift Package Manager (CocoaPods remains supported).
+  config:
+    enable-swift-package-manager: true

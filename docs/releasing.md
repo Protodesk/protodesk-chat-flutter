@@ -56,8 +56,9 @@ validation. Supported platforms are Android and iOS; native metadata declares
 Android API 23 and iOS 13.0 minimums. Those declarations are not physical-device
 acceptance evidence. See `testing.md` for exact tested boundaries, golden baseline
 requirements, and physical device checks. iOS secure-storage simulator acceptance
-passed; protected-file acceptance still requires physical devices. Native Swift
-Package Manager migration remains separate from the current CocoaPods integration.
+passed; protected-file acceptance still requires physical devices. iOS supports
+both Swift Package Manager and CocoaPods from one source tree; see
+`ios-swift-package-manager.md`.
 
 Before first publication:
 

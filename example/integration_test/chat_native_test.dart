@@ -91,7 +91,9 @@ void main() {
           find.byType(TextField),
           'Durable account A message',
         );
-        await tester.tap(find.text('Send'));
+        // The send button enables on the next frame after the draft changes.
+        await tester.pump();
+        await tester.tap(find.byTooltip('Send'));
         await tester.pumpAndSettle();
         expect(find.text('Queued'), findsOneWidget);
         await tester.pumpWidget(const SizedBox());

@@ -7,8 +7,13 @@ Pod::Spec.new do |s|
   s.license = { :type => 'Apache-2.0', :file => '../LICENSE' }
   s.author = 'Protodesk'
   s.source = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  # Shared with the Swift package so CocoaPods and SwiftPM build the same code.
+  s.source_files = 'protodesk_chat/Sources/protodesk_chat/**/*.swift'
+  s.resource_bundles = {
+    'protodesk_chat_privacy' => ['protodesk_chat/Sources/protodesk_chat/PrivacyInfo.xcprivacy']
+  }
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
 end
