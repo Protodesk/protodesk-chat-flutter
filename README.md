@@ -1,6 +1,7 @@
-# Protodesk Chat for Flutter
+# Protodesk Chat SDK for Flutter
 
-Local, unpublished native integration preview (`0.1.0-dev.1`). This repository is
+Native customer support chat for Flutter apps on Android and iOS (`0.1.0`, an
+early release; see "Explicitly unfinished" below). This repository is
 separate from the staff-facing `protodesk-mobile` app. The backend owns the
 canonical protocol in `protodesk-backend/api/contracts/chat/` and
 `protodesk-backend/api/openapi/chat-openapi.yaml`; the Phase 0 Dart sketch describes
@@ -1024,9 +1025,9 @@ isolation. Protected-file acceptance has a separate physical-device harness. See
 ## Release preparation
 
 Run `bash tool/check_release.sh` with Flutter 3.47.5 / Dart 3.13.4 to validate
-the SDK, examples, API docs, and an isolated pub.dev candidate. The source remains
-unpublished. See `docs/releasing.md` for artifacts, supported toolchain, and
-remaining publisher and physical-device release gates.
+the SDK, examples, API docs, and an isolated pub.dev candidate. Publication still
+needs the steps in `docs/releasing.md`, which also covers artifacts, the supported
+toolchain, and physical-device release gates.
 
 ## License
 

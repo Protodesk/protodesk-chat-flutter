@@ -1,7 +1,8 @@
 # Release candidate checks
 
-The SDK remains an unpublished preview (`publish_to: none`). No command or workflow
-in this repository publishes a package. The SDK is licensed under Apache-2.0. Staged candidates include LICENSE and
+Version `0.1.0` is prepared as the first release but is not yet published. The
+source always keeps `publish_to: none`; `tool/stage_release.py` removes it only
+in the staged copy that gets published. No command or workflow in this repository publishes a package. The SDK is licensed under Apache-2.0. Staged candidates include LICENSE and
 NOTICE, and the native podspec references the same license. This applies only
 to the Flutter SDK repository.
 
@@ -62,12 +63,21 @@ both Swift Package Manager and CocoaPods from one source tree; see
 
 Before first publication:
 
-- Preserve LICENSE and NOTICE in release candidates and align native metadata.
-- Obtain a clean candidate dry run and inspect its contents.
-- Configure the repository URL and run CI remotely.
-- Verify pub.dev publisher access and package-name ownership/availability.
-- Complete required physical Android/iOS acceptance and review the changelog.
-- Explicitly authorize publication of a specific reviewed version and commit.
+- Commit all pending work and tag the release commit `v0.1.0`.
+- Push to `github.com/Protodesk/protodesk-chat-flutter` (the `repository:` in
+  `pubspec.yaml`; it must be public for pub.dev to verify it) and see
+  `release-checks.yml` pass remotely.
+- Create a verified pub.dev publisher for `protodesk.io` (domain verification in
+  Google Search Console). `protodesk_chat` was unclaimed on 2026-10-25.
+- Confirm the production Chat SDK API is deployed; the package is unusable
+  against a local-only backend.
+- From the tagged commit, rerun `bash tool/check_release.sh`, stage a candidate,
+  inspect it, then explicitly authorize running `flutter pub publish` in the
+  staged directory for that version and commit.
+  A published version cannot be deleted or re-uploaded.
+
+Physical Android/iOS acceptance is not required for `0.1.0`, which the
+changelog describes as simulator-tested; complete it before `1.0.0`.
 
 Automatic publishing can later use pub.dev trusted publishing/OIDC instead of a
 long-lived token. It is intentionally not configured by this candidate workflow.
@@ -75,6 +85,7 @@ long-lived token. It is intentionally not configured by this candidate workflow.
 ## Latest local packaging validation
 
 On 2026-10-25, the Apache-2.0 candidate passed `flutter pub publish --dry-run`
-with zero warnings (111 KB compressed archive after presentation/lifecycle changes). LICENSE and NOTICE were checked
+with zero warnings (173 KB compressed archive, including the Swift Package
+Manager and CocoaPods iOS sources and the privacy manifest). LICENSE and NOTICE were checked
 against their source copies. Three staging safety tests passed. This is local
 package validation, not confirmation of publisher ownership or remote CI success.

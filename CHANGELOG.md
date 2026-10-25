@@ -1,6 +1,24 @@
-## 0.1.0-dev.1
+## 0.1.0
 
-Unpublished native integration preview: memory-only sessions, conversations,
+First public release of the Protodesk customer support chat SDK for Flutter
+(Android and iOS).
+
+- `ChatMessenger`: a livechat-style UI with Home, Messages and Help tabs,
+  themed from the Chat App brand color, localized (English and Indonesian) and
+  accessible.
+- Anonymous or verified sessions with optional Keychain/Keystore persistence.
+- Realtime messaging with reconnect and replay, offline send queue, attachments,
+  history pagination, unread counts and read state.
+- Push integration for FCM, APNs and OneSignal through host adapters.
+- iOS packaging for both Swift Package Manager and CocoaPods.
+
+Tested on the iOS simulator and in local widget, golden and integration tests.
+Physical-device acceptance (VoiceOver/TalkBack, protected files, real push
+delivery) is not complete; see `doc/guides/testing.md`.
+
+### Development history
+
+Initial native integration preview: memory-only sessions, conversations,
 text messages, realtime reconnect, explicit logout, basic screen and local tests.
 
 Secure persistence increment: optional Keychain/Keystore adapter, account-partitioned

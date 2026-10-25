@@ -1,4 +1,5 @@
 import 'models.dart';
+import 'version.dart';
 
 /// Provider SDKs and notification permission prompts remain host-owned.
 enum ChatPushProvider { fcm, apns, onesignal }
@@ -96,7 +97,7 @@ final class ChatPushTargets {
               : 'native_device_token',
           'target': target,
           'appVersion': appVersion,
-          'sdkVersion': '0.1.0-dev.1',
+          'sdkVersion': chatSdkVersion,
           'locale': locale,
         },
         idempotencyKey ?? _newId(),

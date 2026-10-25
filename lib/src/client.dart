@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'attachment_storage.dart';
 
 import 'models.dart';
+import 'version.dart';
 import 'configuration.dart';
 import 'help.dart';
 import 'lifecycle.dart';
@@ -614,7 +615,7 @@ final class ProtodeskChatClient {
 
   Map<String, dynamic> get _sdk => {
     'name': 'flutter',
-    'version': '0.1.0-dev.1',
+    'version': chatSdkVersion,
     'platform': options.platform,
   };
 
