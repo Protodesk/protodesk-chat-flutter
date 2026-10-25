@@ -1,0 +1,32 @@
+name: protodesk_chat
+description: Native customer support chat for Flutter with secure sessions, realtime messaging, attachments, push integration, and accessible localized UI.
+homepage: https://protodesk.io
+topics:
+  - chat
+  - customer-support
+platforms:
+  android:
+  ios:
+version: 0.1.0-dev.1
+publish_to: none
+environment:
+  sdk: '>=3.13.4 <4.0.0'
+  flutter: '>=3.47.5'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  crypto: ^3.0.7
+  flutter_secure_storage: ^10.3.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.protodesk.chat
+        pluginClass: ProtodeskChatPlugin
+      ios:
+        pluginClass: ProtodeskChatPlugin

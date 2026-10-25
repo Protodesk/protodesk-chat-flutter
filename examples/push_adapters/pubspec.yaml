@@ -1,0 +1,15 @@
+name: protodesk_push_adapters
+description: Copyable host-owned push adapters, separate from the core SDK.
+publish_to: none
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  protodesk_chat:
+    path: ../..
+  firebase_messaging: 16.7.0
+  onesignal_flutter: 5.6.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

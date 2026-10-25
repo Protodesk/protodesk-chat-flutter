@@ -1,0 +1,23 @@
+# Publish only a staged candidate from tool/stage_release.py.
+.dart_tool/
+build/
+doc/api/
+release-artifacts/
+**/pubspec.lock
+**/.flutter-plugins-dependencies
+**/test/
+**/integration_test/
+**/Pods/
+**/ephemeral/
+**/*.iml
+**/local.properties
+**/key.properties
+**/*.keystore
+**/*.jks
+**/*.p12
+**/*.p8
+**/*.pem
+**/google-services.json
+**/GoogleService-Info.plist
+.github/
+tool/

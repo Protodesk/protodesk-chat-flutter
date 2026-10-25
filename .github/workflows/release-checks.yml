@@ -1,0 +1,61 @@
+name: SDK validation and release candidate
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sdk-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the tested Flutter toolchain
+        run: |
+          git clone --depth 1 --branch 3.47.5 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Check version tag
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re
+          version = re.search(r'^version: (\S+)$', pathlib.Path('pubspec.yaml').read_text(), re.M).group(1)
+          if os.environ['GITHUB_REF_TYPE'] == 'tag':
+              assert os.environ['GITHUB_REF_NAME'] == 'v' + version, 'Tag and pubspec version differ'
+          PY
+      - name: Validate SDK, examples, docs and pub.dev candidate
+        run: |
+          mkdir -p release-artifacts
+          set -o pipefail
+          bash tool/check_release.sh 2>&1 | tee release-artifacts/checks.log
+      - name: Assemble reviewed candidate (manual/tag runs only)
+        if: success() && (github.event_name == 'workflow_dispatch' || github.ref_type == 'tag')
+        run: |
+          python3 tool/stage_release.py "$RUNNER_TEMP/release-package" > release-artifacts/manifest.txt
+          tar -czf release-artifacts/protodesk-chat-candidate.tar.gz -C "$RUNNER_TEMP/release-package" .
+          shasum -a 256 release-artifacts/protodesk-chat-candidate.tar.gz > release-artifacts/SHA256SUMS
+          git rev-parse HEAD > release-artifacts/COMMIT
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdk-release-evidence-${{ github.sha }}
+          path: release-artifacts/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Upload generated API documentation
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdk-api-docs-${{ github.sha }}
+          path: doc/api/
+          retention-days: 14
+# This workflow has no publish command, repository write access, OIDC permission,
+# long-lived credential, or release upload. Artifact creation is not publication.

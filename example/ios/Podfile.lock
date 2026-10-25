@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - protodesk_chat (0.1.0):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - protodesk_chat (from `.symlinks/plugins/protodesk_chat/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  protodesk_chat:
+    :path: ".symlinks/plugins/protodesk_chat/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  protodesk_chat: 44b0fe7540a0ef985bcfa1c717ab2ca588844b41
+
+PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
+
+COCOAPODS: 1.17.0
