@@ -9,10 +9,10 @@ Home screen, conversations and your Help Center; your team answers from
 Protodesk.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/home.png" width="200" alt="Home tab">
-  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/conversation.png" width="200" alt="Conversation">
-  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/help.png" width="200" alt="Help Center">
-  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/dark-offline.png" width="200" alt="Dark theme, message queued offline">
+  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/home.png" height="400" alt="Home tab">
+  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/conversation.png" height="400" alt="Conversation">
+  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/help.png" height="400" alt="Help Center">
+  <img src="https://raw.githubusercontent.com/Protodesk/protodesk-chat-flutter/main/screenshots/dark-offline.png" height="400" alt="Dark theme, message queued offline">
 </p>
 
 ## Features
