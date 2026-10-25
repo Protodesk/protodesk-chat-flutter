@@ -23,6 +23,7 @@ transports for failure/race coverage; none need production credentials.
 - Indonesian dark phone with a disconnected, queued message and discard control.
 
 Golden generation environment: Flutter **3.47.5**, Dart **3.13.4**, macOS arm64.
+Golden tests are tagged `golden` and run only on macOS; Linux CI excludes them.
 `test/goldens/flutter_test_config.dart` accepts up to 1% differing pixels, because
 glyph anti-aliasing differs between macOS releases (the macOS 15 CI runner differs
 from macOS 27 baselines by at most 0.5%). Real layout or color regressions exceed

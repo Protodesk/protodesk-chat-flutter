@@ -6,7 +6,12 @@ cd "$sdk_root"
 flutter --version
 flutter pub get
 flutter analyze
-flutter test
+if [[ "$(uname)" == Darwin ]]; then
+  flutter test
+else
+  echo 'Skipping golden tests: baselines are macOS renders.'
+  flutter test --exclude-tags golden
+fi
 (cd example && flutter pub get && flutter analyze && flutter test)
 (cd examples/push_adapters && flutter pub get && flutter analyze && flutter test)
 if [[ "$(uname)" == Darwin ]] && command -v xcodebuild >/dev/null; then

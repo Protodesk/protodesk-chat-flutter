@@ -1,14 +1,15 @@
 name: SDK validation and release candidate
+# macOS-only work (golden pixels, iOS simulator builds with SwiftPM and
+# CocoaPods) plus the release candidate. Heavy, so it runs only for version
+# tags and manual runs; checks.yml covers everything else on Linux.
 on:
-  pull_request:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: sdk-checks-${{ github.ref }}
+  group: sdk-release-checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   validate:

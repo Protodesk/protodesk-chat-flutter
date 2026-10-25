@@ -41,9 +41,12 @@ hosts and integration tests.
 
 ## CI and candidate artifacts
 
-`.github/workflows/release-checks.yml` uses the same pinned Flutter version on
-macOS and runs the local gate for pull requests, main, version tags, and manual
-runs. Tags must equal `v` plus the pubspec version, including prerelease suffixes.
+`.github/workflows/checks.yml` runs the local gate on Linux for every pull
+request and push to main; there it skips golden pixels and iOS builds.
+`.github/workflows/release-checks.yml` runs the full gate on macOS with the same
+pinned Flutter version only for version tags and manual runs (Actions, "SDK
+validation and release candidate", Run workflow). Run it after changing `ios/`,
+`example/ios/` or goldens, or run `bash tool/check_release.sh` locally on a Mac. Tags must equal `v` plus the pubspec version, including prerelease suffixes.
 Successful manual/tag runs produce a candidate archive, manifest, SHA-256 digest,
 and source commit identifier. Validation logs and generated API documentation are
 retained for 14 days. This workflow has not yet been exercised on a remote: the

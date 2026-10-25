@@ -1,3 +1,7 @@
+// Baselines are macOS renders; other hosts skip them (see docs/testing.md).
+@Tags(['golden'])
+library;
+
 import 'dart:convert';
 import 'dart:io';
 

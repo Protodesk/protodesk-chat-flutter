@@ -1,0 +1,26 @@
+name: SDK checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: sdk-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    # Linux runs everything except golden pixels and iOS builds, which need
+    # macOS and run in release-checks.yml.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the tested Flutter toolchain
+        run: |
+          git clone --depth 1 --branch 3.47.5 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Analyze, test, document and dry-run publish
+        run: bash tool/check_release.sh
