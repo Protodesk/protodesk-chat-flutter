@@ -1,0 +1,10 @@
+# The example apps are separate packages; tool/check_release.sh analyzes each
+# after resolving its own dependencies. Excluding them here keeps root analysis
+# from depending on whether those packages were resolved first (a fresh CI
+# checkout has not).
+analyzer:
+  exclude:
+    - build/**
+    - doc/**
+    - example/**
+    - examples/**
