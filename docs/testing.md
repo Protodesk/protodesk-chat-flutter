@@ -101,6 +101,8 @@ defines the protection level this adapter requires.
 - Protected-file hardware suite: added, but not passed on physical Android/iOS.
   The simulator rejection above is recorded as a limitation, not a successful test.
 
-The iOS test build currently uses CocoaPods fallback for the SDK's native plugin;
-Flutter warns that native Swift Package Manager support will be needed in a future
-release. That packaging migration is separate from this test increment.
+The iOS plugin supports Swift Package Manager and CocoaPods. The example app
+builds with Swift Package Manager; the integration test above also passed with
+it and with CocoaPods on the same simulator. `tool/check_ios_packaging.sh`
+builds host apps with both package managers and the example with Swift Package
+Manager; see `ios-swift-package-manager.md`.

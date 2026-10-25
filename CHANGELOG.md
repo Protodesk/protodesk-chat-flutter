@@ -208,3 +208,9 @@ Simplified conversation view: removed the "Mark read through here" control
 context/provenance line (support-facing, still on `conversation.context`), the
 "Beginning of conversation" note and the "Connected" status while connected
 (connecting/offline still show). Shorter contact-prompt copy.
+
+iOS packaging: the plugin builds with Swift Package Manager
+(`ios/protodesk_chat/Package.swift`) or CocoaPods from the same sources, and
+ships a privacy manifest declaring file-metadata access (reason `C617.1`). The
+example app uses Swift Package Manager. `tool/check_ios_packaging.sh` (run by
+`check_release.sh` on macOS) builds host apps with both package managers.

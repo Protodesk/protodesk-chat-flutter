@@ -274,6 +274,14 @@ device test. Unit tests cover refresh races, late responses after logout, accoun
 switching, retry identifiers, replay/deduplication, and intentional disconnect.
 Widget tests cover retry and clearing visible messages after logout.
 
+### iOS package managers
+
+The iOS plugin builds with Swift Package Manager or CocoaPods; Flutter picks
+Swift Package Manager when it is enabled for the host app. It ships a privacy
+manifest. On macOS, `tool/check_release.sh` also runs
+`tool/check_ios_packaging.sh`, which builds host apps with both package
+managers. See `docs/ios-swift-package-manager.md`.
+
 ## Explicitly unfinished
 
 This is **not ready for production or package publication**. `publish_to: none`

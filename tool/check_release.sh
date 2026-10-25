@@ -9,6 +9,11 @@ flutter analyze
 flutter test
 (cd example && flutter pub get && flutter analyze && flutter test)
 (cd examples/push_adapters && flutter pub get && flutter analyze && flutter test)
+if [[ "$(uname)" == Darwin ]] && command -v xcodebuild >/dev/null; then
+  bash tool/check_ios_packaging.sh
+else
+  echo 'Skipping iOS packaging checks: macOS with Xcode required.'
+fi
 python3 -m unittest discover -s tool -p '*_test.py'
 dart doc --validate-links --output doc/api
 candidate_parent="$(mktemp -d)"
