@@ -77,15 +77,18 @@ class FakeTransport implements ChatTransport {
 
   ChatResponse respond(Call call) {
     final path = call.uri.path;
-    if (path.contains('/sessions') && call.method == 'POST')
+    if (path.contains('/sessions') && call.method == 'POST') {
       return ChatResponse(201, session());
-    if (path.endsWith('/bootstrap'))
+    }
+    if (path.endsWith('/bootstrap')) {
       return const ChatResponse(200, {
         'unreadCount': 0,
         'capabilities': {'typing': true},
       });
-    if (path.endsWith('/realtime/ticket'))
+    }
+    if (path.endsWith('/realtime/ticket')) {
       return ChatResponse(201, {'ticket': 'ticket-${calls.length}'});
+    }
     if (path.endsWith('/messages')) {
       if (call.method == 'POST') {
         final id = call.body!['clientMessageId'] as String;
@@ -112,9 +115,10 @@ class FakeTransport implements ChatTransport {
       }
       return ChatResponse(200, Map.of(contact));
     }
-    if (path.endsWith('/conversations/conv_test'))
+    if (path.endsWith('/conversations/conv_test')) {
       return ChatResponse(200, conversation());
-    if (path.endsWith('/conversations'))
+    }
+    if (path.endsWith('/conversations')) {
       return call.method == 'POST'
           ? ChatResponse(201, conversation())
           : ChatResponse(200, {
@@ -122,6 +126,7 @@ class FakeTransport implements ChatTransport {
               'hasMore': false,
               'nextCursor': null,
             });
+    }
     return const ChatResponse(204, {});
   }
 

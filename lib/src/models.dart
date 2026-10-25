@@ -270,8 +270,9 @@ final class ChatTypingActor {
   static ChatTypingActor parse(Object? value) {
     if (value == null) return const ChatTypingActor('customer');
     if (value is! Map) throw const FormatException();
-    if (value['kind'] == 'customer' && value['id'] == null)
+    if (value['kind'] == 'customer' && value['id'] == null) {
       return const ChatTypingActor('customer');
+    }
     if (value['kind'] == 'agent' &&
         value['id'] is String &&
         RegExp(r'^actor_[a-f0-9]{64}$').hasMatch(value['id'] as String)) {

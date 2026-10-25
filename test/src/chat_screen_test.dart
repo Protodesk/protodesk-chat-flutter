@@ -124,10 +124,11 @@ void main() {
         }
         if (call.method == 'GET' && call.uri.path.endsWith('/messages')) {
           final older = call.uri.queryParameters['cursor'] != null;
-          if (older && failOlder)
+          if (older && failOlder) {
             return const ChatResponse(503, {
               'error': {'code': 'chat.dependency_unavailable'},
             });
+          }
           return ChatResponse(200, {
             'data': [
               message(

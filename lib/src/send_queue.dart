@@ -55,8 +55,9 @@ final class ChatSendQueue {
         options.maxAttempts > 8 ||
         options.maxAge <= Duration.zero ||
         options.maxAge > const Duration(hours: 24) ||
-        options.baseRetryDelay <= Duration.zero)
+        options.baseRetryDelay <= Duration.zero) {
       throw ArgumentError('Invalid send queue limits.');
+    }
   }
   final Future<void> Function(Map<String, dynamic>)? persist;
   Future<void> _writes = Future.value();
@@ -85,8 +86,9 @@ final class ChatSendQueue {
       List.unmodifiable(_items.map((p) => p.snapshot));
 
   String enqueue({required String conversationId, required String text}) {
-    if (isPersistent)
+    if (isPersistent) {
       throw const ProtodeskChatException('chat.durable_enqueue_required');
+    }
     final item = _enqueue(conversationId, text);
     _kick();
     return item.id;
@@ -96,14 +98,16 @@ final class ChatSendQueue {
     required String conversationId,
     required String text,
   }) async {
-    if (_storageBlocked)
+    if (_storageBlocked) {
       throw const ProtodeskChatException('chat.storage_unavailable');
+    }
     final epoch = _epoch;
     final item = _enqueue(conversationId, text);
     try {
       await _persist();
-      if (_closed || epoch != _epoch)
+      if (_closed || epoch != _epoch) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       _kick();
       return item.id;
     } catch (_) {
@@ -114,8 +118,9 @@ final class ChatSendQueue {
   }
 
   _Pending _enqueue(String conversationId, String text) {
-    if (_closed || !isReady())
+    if (_closed || !isReady()) {
       throw const ProtodeskChatException('chat.session_required');
+    }
     _expire();
     final bytes = utf8.encode(text).length;
     if (conversationId.isEmpty ||
@@ -233,10 +238,12 @@ final class ChatSendQueue {
     if (persist == null) return Future.value();
     final value = _record(), epoch = _epoch;
     final result = _writes.then((_) async {
-      if (epoch != _epoch)
+      if (epoch != _epoch) {
         throw const ProtodeskChatException('chat.operation_cancelled');
-      if (_storageBlocked && !recover)
+      }
+      if (_storageBlocked && !recover) {
         throw const ProtodeskChatException('chat.storage_unavailable');
+      }
       await persist!(value);
     });
     _writes = result.then<void>(
@@ -260,8 +267,9 @@ final class ChatSendQueue {
 
   /// After storage is repaired, durably adopt the current state before resuming.
   Future<void> retryPersistence() async {
-    if (_closed || !isReady())
+    if (_closed || !isReady()) {
       throw const ProtodeskChatException('chat.session_required');
+    }
     await _persist(recover: true);
     _storageBlocked = false;
     lastError = null;
@@ -276,8 +284,9 @@ final class ChatSendQueue {
     try {
       if (record['queueVersion'] != 1 ||
           record['items'] is! List ||
-          (record['items'] as List).length > 100)
+          (record['items'] as List).length > 100) {
         throw const FormatException();
+      }
       final restored = <_Pending>[];
       final ids = <String>{};
       final now = DateTime.now();
@@ -287,8 +296,9 @@ final class ChatSendQueue {
         if (now.isBefore(p.expires)) restored.add(p);
       }
       if (restored.length > options.maxMessages ||
-          restored.fold<int>(0, (n, p) => n + p.bytes) > options.maxBytes)
+          restored.fold<int>(0, (n, p) => n + p.bytes) > options.maxBytes) {
         throw const FormatException();
+      }
       _items.addAll(restored);
     } catch (_) {
       throw const ProtodeskChatException('chat.storage_corrupt');
@@ -352,8 +362,9 @@ final class ChatSendQueue {
         _active &&
         isReady() &&
         head?.retryAt != null &&
-        head!.retryAt!.isBefore(next))
+        head!.retryAt!.isBefore(next)) {
       next = head.retryAt!;
+    }
     _timer = Timer(
       next.isAfter(now) ? next.difference(now) : Duration.zero,
       _kick,
@@ -373,16 +384,18 @@ final class ChatSendQueue {
             .where((p) => p.state == ChatSendState.queued)
             .firstOrNull;
         if (p == null ||
-            (p.retryAt != null && p.retryAt!.isAfter(DateTime.now())))
+            (p.retryAt != null && p.retryAt!.isAfter(DateTime.now()))) {
           break;
+        }
         p.state = ChatSendState.sending;
         p.attempts++;
         p.error = null;
         _notify();
         _schedule();
         try {
-          if (isPersistent)
+          if (isPersistent) {
             await _persist(); // Attempt marker before transmission.
+          }
           if (_closed || epoch != _epoch || !_items.contains(p)) continue;
           if (_storageBlocked || !_active || !isReady()) {
             p.state = ChatSendState.queued;
@@ -407,8 +420,9 @@ final class ChatSendQueue {
               ? error
               : const ProtodeskChatException('chat.send_failed');
           p.error = safe;
-          if (safe.retryAfter != null)
+          if (safe.retryAfter != null) {
             p.serverRetryAt = DateTime.now().add(safe.retryAfter!);
+          }
           if (!safe.retryable || p.attempts >= options.maxAttempts) {
             p.state = ChatSendState.failed;
             p.retryAt = null;
@@ -422,8 +436,10 @@ final class ChatSendQueue {
             p.retryAt = DateTime.now().add(
               Duration(milliseconds: 1 + Random().nextInt(max(1, ceiling))),
             );
-            if (p.serverRetryAt != null && p.serverRetryAt!.isAfter(p.retryAt!))
+            if (p.serverRetryAt != null &&
+                p.serverRetryAt!.isAfter(p.retryAt!)) {
               p.retryAt = p.serverRetryAt;
+            }
           }
           _saveSoon();
           _notify();
@@ -471,10 +487,12 @@ final class _Pending {
         attempts > 8 ||
         created.isAfter(now.add(const Duration(minutes: 5))) ||
         !expires.isAfter(created) ||
-        expires.isAfter(created.add(const Duration(hours: 24))))
+        expires.isAfter(created.add(const Duration(hours: 24)))) {
       throw const FormatException();
-    if (expires.isAfter(created.add(options.maxAge)))
+    }
+    if (expires.isAfter(created.add(options.maxAge))) {
       expires = created.add(options.maxAge);
+    }
     final p = _Pending(
       id,
       conversation,
@@ -495,8 +513,9 @@ final class _Pending {
     if (value['error'] != null) {
       final error = value['error'] as Map;
       final code = error['code'] as String;
-      if (!RegExp(r'^chat\.[a-z0-9_]+$').hasMatch(code))
+      if (!RegExp(r'^chat\.[a-z0-9_]+$').hasMatch(code)) {
         throw const FormatException();
+      }
       p.error = ProtodeskChatException(
         code,
         retryable: error['retryable'] as bool,
@@ -513,8 +532,9 @@ final class _Pending {
       );
     }
     if (p.serverRetryAt != null &&
-        (p.retryAt == null || p.retryAt!.isBefore(p.serverRetryAt!)))
+        (p.retryAt == null || p.retryAt!.isBefore(p.serverRetryAt!))) {
       p.retryAt = p.serverRetryAt;
+    }
     return p;
   }
   Map<String, dynamic> toJson() => {

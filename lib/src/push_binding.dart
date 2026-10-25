@@ -22,10 +22,11 @@ final class ChatPushRegistrationBinding {
   /// A null token with permission means the provider is not ready; it does not
   /// revoke. Permission/opt-in loss must pass permissionGranted:false.
   Future<void> update({String? token, required bool permissionGranted}) {
-    if (_disposed)
+    if (_disposed) {
       return Future.error(
         const ProtodeskChatException('chat.operation_cancelled'),
       );
+    }
     if (token != null && (token.isEmpty || token.length > 4096)) {
       return Future.error(
         const ProtodeskChatException('chat.push_target_invalid'),
@@ -78,8 +79,9 @@ final class ChatPushRegistrationBinding {
               status >= 400 &&
               status < 500 &&
               status != 408 &&
-              status != 429)
+              status != 429) {
             _uncertain = null;
+          }
           rethrow;
         }
       }

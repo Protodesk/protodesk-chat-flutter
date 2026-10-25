@@ -334,7 +334,7 @@ class _ContactPromptState extends State<_ContactPrompt> {
       ),
       layoutBuilder: (current, previous) => Stack(
         alignment: Alignment.topCenter,
-        children: [...previous, if (current != null) current],
+        children: [...previous, ?current],
       ),
       child: KeyedSubtree(
         key: ValueKey(_view == _ContactView.saving ? _ContactView.form : _view),

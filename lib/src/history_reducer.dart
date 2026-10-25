@@ -91,14 +91,16 @@ void _upsert(Map<String, dynamic> page, Map<String, dynamic> incoming) {
   final index = rows.indexWhere((row) => row['id'] == incoming['id']);
   if (index >= 0) {
     // Equal versions retain the authoritative snapshot, including read counts.
-    if (_version(incoming).isAfter(_version(rows[index])))
+    if (_version(incoming).isAfter(_version(rows[index]))) {
       rows[index] = incoming;
+    }
   } else {
     // Do not insert an isolated old row below an incomplete page's boundary.
     if (page['hasMore'] == true &&
         rows.isNotEmpty &&
-        _order(incoming, rows.last) > 0)
+        _order(incoming, rows.last) > 0) {
       return;
+    }
     rows.add(incoming);
   }
   rows.sort((a, b) => _order(a as Map, b as Map));

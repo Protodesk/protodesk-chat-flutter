@@ -237,8 +237,9 @@ List<ChatHelpBlock> _parseBlocks(String markdown) {
   void flushParagraph() {
     final value = paragraph.join(' ').trim();
     paragraph = [];
-    if (value.isNotEmpty)
+    if (value.isNotEmpty) {
       blocks.add(ChatHelpParagraph._(parseHelpInline(value)));
+    }
   }
 
   void flushCode() {

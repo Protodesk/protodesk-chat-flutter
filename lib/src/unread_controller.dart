@@ -12,8 +12,9 @@ final class ChatUnreadController {
       client.events.listen((event) {
         if (event.type == 'message.created' ||
             event.type == 'conversation.read' ||
-            event.type.startsWith('conversation.'))
+            event.type.startsWith('conversation.')) {
           _invalidate();
+        }
       }),
     );
     _subscriptions.add(
@@ -65,8 +66,9 @@ final class ChatUnreadController {
   }
 
   Future<void> refresh() {
-    if (_disposed || client.state != ChatClientState.ready)
+    if (_disposed || client.state != ChatClientState.ready) {
       return Future.value();
+    }
     _timer?.cancel();
     _timer = null;
     return _pending ??= _refresh().whenComplete(() => _pending = null);

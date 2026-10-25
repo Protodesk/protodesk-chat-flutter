@@ -17,16 +17,19 @@ void main() {
       final binary = fixtures.BinaryTransport()..barrier = Completer();
       var sends = 0;
       transport.handler = (call) async {
-        if (call.uri.path.endsWith('/uploads'))
+        if (call.uri.path.endsWith('/uploads')) {
           return ChatResponse(201, fixtures.capability());
-        if (call.uri.path.endsWith('/complete'))
+        }
+        if (call.uri.path.endsWith('/complete')) {
           return ChatResponse(200, fixtures.readyAttachment());
+        }
         if (call.uri.path.endsWith('/messages') && call.method == 'POST') {
-          if (++sends == 1)
+          if (++sends == 1) {
             throw const ProtodeskChatException(
               'chat.network_unavailable',
               retryable: true,
             );
+          }
           return ChatResponse(201, {
             ...message(
               text: call.body!['body'] as String,
@@ -137,8 +140,9 @@ void main() {
       'filename': 'image.png',
     };
     transport.handler = (call) async {
-      if (call.uri.path.endsWith('/download'))
+      if (call.uri.path.endsWith('/download')) {
         return ChatResponse(200, fixtures.capability());
+      }
       if (call.method == 'GET' && call.uri.path.endsWith('/messages')) {
         return ChatResponse(200, {
           'data': [

@@ -46,11 +46,7 @@ final class PlatformChatAttachmentFileStore implements ChatAttachmentFileStore {
     String scope,
     String partition, [
     String? handle,
-  ]) => {
-    'scope': scope,
-    'partition': partition,
-    if (handle != null) 'handle': handle,
-  };
+  ]) => {'scope': scope, 'partition': partition, 'handle': ?handle};
   @override
   Future<bool> isAvailable() async {
     try {

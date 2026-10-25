@@ -1,3 +1,12 @@
+## 0.1.1
+
+- Requires `flutter_secure_storage` 11, which raises the Android minimum to
+  API 24 (Flutter's own minimum). Data stored by 0.1.0 stays readable: the SDK
+  never used the cipher options v11 removed.
+- Enables the Flutter recommended lints; code style fixes only.
+- `pubspec.yaml` no longer sets `publish_to`, so pub.dev can verify the
+  repository. The README installs from pub.dev.
+
 ## 0.1.0
 
 First public release of the Protodesk customer support chat SDK for Flutter

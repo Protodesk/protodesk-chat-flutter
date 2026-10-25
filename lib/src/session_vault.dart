@@ -11,10 +11,12 @@ import 'storage.dart';
 final class SessionVault {
   SessionVault(this.storage, String origin, String appId)
     : scope = sha256.convert(utf8.encode('$origin\n$appId')).toString() {
-    if (!storage.isPlatformSecure)
+    if (!storage.isPlatformSecure) {
       throw const ProtodeskChatException('chat.secure_storage_required');
-    if (!_leases.add(scope))
+    }
+    if (!_leases.add(scope)) {
       throw const ProtodeskChatException('chat.storage_in_use');
+    }
   }
   final ChatStorageAdapter storage;
   final String scope;
@@ -25,12 +27,13 @@ final class SessionVault {
       'protodesk.chat.v1.$scope.${identityKey == null ? 'anonymous' : sha256.convert(utf8.encode('verified\n$identityKey'))}';
 
   Future<T> _run<T>(Future<T> Function() operation) {
-    if (_closed)
+    if (_closed) {
       return Future.error(
         const ProtodeskChatException('chat.operation_cancelled'),
       );
+    }
     final result = _tail.then((_) => operation());
-    _tail = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    _tail = result.then<void>((_) {}, onError: (Object _, StackTrace _) {});
     return result;
   }
 
@@ -47,8 +50,9 @@ final class SessionVault {
         if (raw == null) return null;
         try {
           final value = jsonDecode(raw) as Map<String, dynamic>;
-          if (value['version'] != 1 || value['scope'] != key)
+          if (value['version'] != 1 || value['scope'] != key) {
             throw const FormatException();
+          }
           return value;
         } catch (_) {
           throw const ProtodeskChatException('chat.storage_corrupt');

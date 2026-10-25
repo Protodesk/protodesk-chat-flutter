@@ -25,11 +25,12 @@ void main() {
       final calls = <List<String>>[];
       final q = queue((conv, id, text) async {
         calls.add([conv, id, text]);
-        if (calls.length == 1)
+        if (calls.length == 1) {
           throw const ProtodeskChatException(
             'chat.network_unavailable',
             retryable: true,
           );
+        }
         return confirmed(id, text: text);
       });
       q.setActive(false);
@@ -106,12 +107,13 @@ void main() {
   test('manual retry honors server Retry-After', () async {
     var calls = 0;
     final q = queue((c, id, text) async {
-      if (++calls == 1)
+      if (++calls == 1) {
         throw const ProtodeskChatException(
           'chat.rate_limited',
           retryable: true,
           retryAfter: Duration(milliseconds: 80),
         );
+      }
       return confirmed(id);
     });
     final id = q.enqueue(conversationId: 'conv_test', text: 'Hello');

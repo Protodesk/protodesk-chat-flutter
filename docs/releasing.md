@@ -1,8 +1,10 @@
 # Release candidate checks
 
-Version `0.1.0` is prepared as the first release but is not yet published. The
-source always keeps `publish_to: none`; `tool/stage_release.py` removes it only
-in the staged copy that gets published. No command or workflow in this repository publishes a package. The SDK is licensed under Apache-2.0. Staged candidates include LICENSE and
+`protodesk_chat` is published on pub.dev under the verified publisher
+`protodesk.io` (0.1.0 on 2026-10-25). `pubspec.yaml` has no `publish_to`, so
+pub.dev can verify the repository copy; staging refuses one. Publishing is only
+ever a manual `flutter pub publish` from a staged candidate: no command or
+workflow in this repository publishes a package. The SDK is licensed under Apache-2.0. Staged candidates include LICENSE and
 NOTICE, and the native podspec references the same license. This applies only
 to the Flutter SDK repository.
 
@@ -57,29 +59,27 @@ and no publishing credentials or publication step.
 
 The declared minimum toolchain is Flutter 3.47.5 / Dart 3.13.4, matching local
 validation. Supported platforms are Android and iOS; native metadata declares
-Android API 23 and iOS 13.0 minimums. Those declarations are not physical-device
+Android API 24 and iOS 13.0 minimums. Those declarations are not physical-device
 acceptance evidence. See `testing.md` for exact tested boundaries, golden baseline
 requirements, and physical device checks. iOS secure-storage simulator acceptance
 passed; protected-file acceptance still requires physical devices. iOS supports
 both Swift Package Manager and CocoaPods from one source tree; see
 `ios-swift-package-manager.md`.
 
-Before first publication:
+To publish a version:
 
-- Commit all pending work and tag the release commit `v0.1.0`.
-- Push to `github.com/Protodesk/protodesk-chat-flutter` (the `repository:` in
-  `pubspec.yaml`; it must be public for pub.dev to verify it) and see
-  `release-checks.yml` pass remotely.
-- Create a verified pub.dev publisher for `protodesk.io` (domain verification in
-  Google Search Console). `protodesk_chat` was unclaimed on 2026-10-25.
-- Confirm the production Chat SDK API is deployed; the package is unusable
-  against a local-only backend.
-- From the tagged commit, rerun `bash tool/check_release.sh`, stage a candidate,
-  inspect it, then explicitly authorize running `flutter pub publish` in the
-  staged directory for that version and commit.
-  A published version cannot be deleted or re-uploaded.
+1. Set `version` in `pubspec.yaml`, `chatSdkVersion` in `lib/src/version.dart`
+   and a matching `## <version>` changelog heading (`test/src/version_test.dart`
+   checks all three).
+2. Push to `main` and see `checks.yml` pass.
+3. Tag the commit `v<version>` and push the tag; `release-checks.yml` must pass
+   on macOS.
+4. From a clean checkout of the tag, run `python3 tool/stage_release.py <dir>`,
+   inspect the candidate, then run `flutter pub publish` in `<dir>`.
+   A published version cannot be deleted or re-uploaded.
+5. Create the GitHub release for the tag with the changelog summary.
 
-Physical Android/iOS acceptance is not required for `0.1.0`, which the
+Physical Android/iOS acceptance is not required for `0.1.x`, which the
 changelog describes as simulator-tested; complete it before `1.0.0`.
 
 Automatic publishing can later use pub.dev trusted publishing/OIDC instead of a

@@ -98,17 +98,19 @@ class Fixture {
     request: (m, p, b, k) async {
       calls.add((m, p, b, k));
       if (p.endsWith('/complete')) {
-        if (completeUnavailable)
+        if (completeUnavailable) {
           throw const ProtodeskChatException(
             'chat.attachment_unavailable',
             retryable: true,
             retryAfter: Duration(seconds: 5),
           );
-        if (expired || !binary.accepted)
+        }
+        if (expired || !binary.accepted) {
           throw const ProtodeskChatException(
             'chat.attachment_invalid',
             status: 409,
           );
+        }
         return fixtures.readyAttachment();
       }
       if (m == 'DELETE') return {};
@@ -120,11 +122,12 @@ class Fixture {
     },
     send: (conversation, id, text, ids) async {
       sends.add(id);
-      if (loseSend)
+      if (loseSend) {
         throw const ProtodeskChatException(
           'chat.network_unavailable',
           retryable: true,
         );
+      }
       return ChatMessage.fromJson({
         ...message(text: text, clientId: id),
         'attachments': [fixtures.readyAttachment()],
@@ -148,11 +151,12 @@ class RecoverableBinary implements ChatAttachmentTransport {
     puts++;
     accepted = true;
     progress(bytes.length);
-    if (loseResponse)
+    if (loseResponse) {
       throw const ProtodeskChatException(
         'sdk.attachment_transfer_failed',
         retryable: true,
       );
+    }
   }
 
   @override

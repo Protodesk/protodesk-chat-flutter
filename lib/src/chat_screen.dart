@@ -213,8 +213,9 @@ class _ChatScreenState extends State<ChatMessenger>
       return;
     }
     final viewport = _readViewport.currentContext?.findRenderObject();
-    if (viewport is! RenderBox || !viewport.attached || !viewport.hasSize)
+    if (viewport is! RenderBox || !viewport.attached || !viewport.hasSize) {
       return;
+    }
     RenderObject child = viewport;
     for (
       RenderObject? ancestor = viewport.parent;
@@ -249,29 +250,34 @@ class _ChatScreenState extends State<ChatMessenger>
     final visible = <String>{};
     ChatMessage? candidate;
     for (final message in _messages) {
-      if (message.sender == 'endUser' || !message.id.startsWith('msg_'))
+      if (message.sender == 'endUser' || !message.id.startsWith('msg_')) {
         continue;
+      }
       final tile = _readTiles[message.id]?.currentContext?.findRenderObject();
       if (tile is! RenderBox ||
           !tile.attached ||
           !tile.hasSize ||
-          tile.size.isEmpty)
+          tile.size.isEmpty) {
         continue;
+      }
       final rect = tile.localToGlobal(Offset.zero) & tile.size;
       if (clip.isEmpty ||
           rect.left < clip.left ||
           rect.right > clip.right ||
           rect.top < clip.top ||
-          rect.bottom > clip.bottom)
+          rect.bottom > clip.bottom) {
         continue;
+      }
       visible.add(message.id);
       final since = _visibleSince.putIfAbsent(message.id, () => _readElapsed);
       if (_readElapsed - since < const Duration(seconds: 1)) continue;
       if (_automaticReadBoundary != null &&
-          !_newerReadBoundary(message, _automaticReadBoundary!))
+          !_newerReadBoundary(message, _automaticReadBoundary!)) {
         continue;
-      if (candidate == null || _newerReadBoundary(message, candidate))
+      }
+      if (candidate == null || _newerReadBoundary(message, candidate)) {
         candidate = message;
+      }
     }
     _visibleSince.removeWhere((id, _) => !visible.contains(id));
     _readTiles.removeWhere((_, key) => key.currentContext == null);
@@ -750,8 +756,9 @@ class _ChatScreenState extends State<ChatMessenger>
         _picking ||
         _selected == null ||
         (_draft.text.trim().isEmpty && _uploads.isEmpty) ||
-        _uploads.any((u) => u.state != ChatUploadState.ready))
+        _uploads.any((u) => u.state != ChatUploadState.ready)) {
       return;
+    }
     final epoch = _epoch;
     setState(() => _saving = true);
     try {
@@ -792,8 +799,9 @@ class _ChatScreenState extends State<ChatMessenger>
       if (!mounted ||
           epoch != _epoch ||
           conversation != _selected ||
-          source == null)
+          source == null) {
         return;
+      }
       // Native pickers may temporarily suspend the app. Wait for foreground
       // reconciliation before attempting an online-only transfer.
       if (!widget.client.attachments.isPersistent &&
@@ -923,8 +931,9 @@ class _ChatScreenState extends State<ChatMessenger>
           if (route.isActive) navigator.removeRoute(route);
         };
         final subscription = widget.client.states.listen((state) {
-          if (state != ChatClientState.ready && route.isActive)
+          if (state != ChatClientState.ready && route.isActive) {
             navigator.removeRoute(route);
+          }
         });
         try {
           await navigator.push(route);
@@ -956,8 +965,9 @@ class _ChatScreenState extends State<ChatMessenger>
         ModalRoute.of(context)?.isCurrent == false ||
         (WidgetsBinding.instance.lifecycleState != null &&
             WidgetsBinding.instance.lifecycleState !=
-                AppLifecycleState.resumed))
+                AppLifecycleState.resumed)) {
       return;
+    }
     final epoch = _epoch;
     final generation = _readGeneration;
     setState(() => _reportingRead = true);
@@ -973,11 +983,13 @@ class _ChatScreenState extends State<ChatMessenger>
         }
       }
     } catch (error) {
-      if (mounted && epoch == _epoch && generation == _readGeneration)
+      if (mounted && epoch == _epoch && generation == _readGeneration) {
         setState(() => _error = _code(error));
+      }
     } finally {
-      if (mounted && epoch == _epoch && generation == _readGeneration)
+      if (mounted && epoch == _epoch && generation == _readGeneration) {
         setState(() => _reportingRead = false);
+      }
     }
   }
 
@@ -1042,27 +1054,6 @@ class _ChatScreenState extends State<ChatMessenger>
         label: kind == _BubbleKind.system
             ? _text(ChatText.automatedNotice)
             : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (message.text.isNotEmpty)
-              Text(
-                message.text,
-                semanticsLabel:
-                    '${_strings.sender(message.sender)}: ${message.text}',
-                style: _theme.textTheme.bodyMedium?.copyWith(
-                  color: foreground,
-                  height: 1.45,
-                ),
-              ),
-            for (final attachment in message.attachments)
-              _attachmentChip(
-                attachment,
-                customer: kind == _BubbleKind.customer,
-              ),
-          ],
-        ),
         footer: status == null && actions.isEmpty
             ? null
             : Wrap(
@@ -1084,6 +1075,27 @@ class _ChatScreenState extends State<ChatMessenger>
                   ...actions,
                 ],
               ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (message.text.isNotEmpty)
+              Text(
+                message.text,
+                semanticsLabel:
+                    '${_strings.sender(message.sender)}: ${message.text}',
+                style: _theme.textTheme.bodyMedium?.copyWith(
+                  color: foreground,
+                  height: 1.45,
+                ),
+              ),
+            for (final attachment in message.attachments)
+              _attachmentChip(
+                attachment,
+                customer: kind == _BubbleKind.customer,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1515,10 +1527,12 @@ class _ChatScreenState extends State<ChatMessenger>
                   onNotification: (event) {
                     if (event.depth == 0) {
                       _visibleSince.clear();
-                      if (event is ScrollStartNotification)
+                      if (event is ScrollStartNotification) {
                         _scrollingMessages = true;
-                      if (event is ScrollEndNotification)
+                      }
+                      if (event is ScrollEndNotification) {
                         _scrollingMessages = false;
+                      }
                     }
                     return false;
                   },
@@ -1910,10 +1924,12 @@ class _ChatScreenState extends State<ChatMessenger>
             ],
           );
         }
-        if (index == _conversations.length + 1)
+        if (index == _conversations.length + 1) {
           return _pagination(messages: false);
-        if (index == _conversations.length + 2)
+        }
+        if (index == _conversations.length + 2) {
           return const SizedBox(height: 24);
+        }
         final conversation = _conversations[index - 1];
         final subject = conversation.subject.isEmpty
             ? _text(ChatText.conversation)
@@ -2130,8 +2146,9 @@ class _ChatStatusState extends State<_ChatStatus> {
           ModalRoute.of(context)?.isCurrent == false ||
           (WidgetsBinding.instance.lifecycleState != null &&
               WidgetsBinding.instance.lifecycleState !=
-                  AppLifecycleState.resumed))
+                  AppLifecycleState.resumed)) {
         return;
+      }
       unawaited(
         SemanticsService.sendAnnouncement(
           View.of(context),

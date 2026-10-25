@@ -41,7 +41,7 @@ Map<String, dynamic> anonymous({
   'anonymousIdentity': {
     'generation': generation,
     'acknowledgementRequired': ack,
-    if (secret != null) 'resumeSecret': secret,
+    'resumeSecret': ?secret,
   },
 };
 Future<ProtodeskChatClient> stored(
@@ -82,15 +82,17 @@ void main() {
     final storage = SecureMemory(), transport = FakeTransport();
     var revoked = false;
     transport.handler = (call) async {
-      if (call.method == 'DELETE' && revoked)
+      if (call.method == 'DELETE' && revoked) {
         return const ChatResponse(401, {
           'error': {'code': 'chat.session_revoked'},
         });
+      }
       if (call.uri.path.endsWith('/anonymous')) {
-        if (revoked && call.body?['resumeSecret'] != null)
+        if (revoked && call.body?['resumeSecret'] != null) {
           return const ChatResponse(401, {
             'error': {'code': 'chat.anonymous_resume_invalid'},
           });
+        }
         return ChatResponse(201, anonymous());
       }
       return transport.respond(call);
@@ -111,10 +113,12 @@ void main() {
     () async {
       final storage = BlockingStorage(), transport = FakeTransport();
       transport.handler = (call) async {
-        if (call.uri.path == '/v1/chat/sessions')
+        if (call.uri.path == '/v1/chat/sessions') {
           return ChatResponse(201, session(expired: true));
-        if (call.uri.path.endsWith('/refresh'))
+        }
+        if (call.uri.path.endsWith('/refresh')) {
           return ChatResponse(200, session(token: 'rotated'));
+        }
         return transport.respond(call);
       };
       final client = await stored(
@@ -145,8 +149,9 @@ void main() {
       final exchange = Completer<ChatResponse>();
       transport.handler = (call) async {
         if (call.uri.path == '/v1/chat/sessions' &&
-            call.body?['identityToken'] == 'second')
+            call.body?['identityToken'] == 'second') {
           return exchange.future;
+        }
         return transport.respond(call);
       };
       final client = await stored(
@@ -232,11 +237,12 @@ void main() {
     var stage = 0;
     transport.handler = (call) async {
       if (call.uri.path.endsWith('/anonymous')) {
-        if (stage == 1)
+        if (stage == 1) {
           throw const ProtodeskChatException(
             'chat.network_unavailable',
             retryable: true,
           );
+        }
         if (stage == 2) {
           expect(call.body!['resumeSecret'], 'proof-1');
           expect(call.body!['resumeSecretGeneration'], 1);
@@ -354,11 +360,12 @@ void main() {
           anonymous(generation: 2, secret: stage == 1 ? 'proof-2' : null),
         );
       }
-      if (call.uri.path.endsWith('/acknowledge') && stage == 1)
+      if (call.uri.path.endsWith('/acknowledge') && stage == 1) {
         throw const ProtodeskChatException(
           'chat.network_unavailable',
           retryable: true,
         );
+      }
       return transport.respond(call);
     };
     await (await stored(storage, transport, create: true)).dispose();
@@ -444,11 +451,12 @@ void main() {
       var lose = true;
       transport.handler = (call) async {
         if (call.uri.path.endsWith('/anonymous')) {
-          if (lose)
+          if (lose) {
             throw const ProtodeskChatException(
               'chat.network_unavailable',
               retryable: true,
             );
+          }
           return ChatResponse(201, anonymous());
         }
         return transport.respond(call);
@@ -472,8 +480,9 @@ void main() {
     final storage = SecureMemory(), transport = FakeTransport();
     var failReset = true;
     transport.handler = (call) async {
-      if (call.uri.path.endsWith('/anonymous'))
+      if (call.uri.path.endsWith('/anonymous')) {
         return ChatResponse(201, anonymous());
+      }
       if (call.method == 'DELETE' &&
           call.uri.path.endsWith('/anonymous-identity') &&
           failReset) {

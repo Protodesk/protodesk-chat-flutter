@@ -32,15 +32,17 @@ final class ChatPushPayload {
         value['schemaVersion'] is! int ||
         value['schemaVersion'] != 1 ||
         value['type'] != 'message.created' ||
-        value['publicChatAppId'] != publicChatAppId)
+        value['publicChatAppId'] != publicChatAppId) {
       return null;
+    }
     final conversation = value['conversationId'];
     final intent = value['notificationIntentId'];
     if (conversation is! String ||
         intent is! String ||
         !RegExp(r'^conv_[a-z2-7]{26}$').hasMatch(conversation) ||
-        !RegExp(r'^nti_[a-z2-7]{25}[aeimquy4]$').hasMatch(intent))
+        !RegExp(r'^nti_[a-z2-7]{25}[aeimquy4]$').hasMatch(intent)) {
       return null;
+    }
     return ChatPushPayload._(publicChatAppId, conversation, intent);
   }
 }
@@ -54,17 +56,14 @@ bool isProtodeskPush(Object? data, {required String publicChatAppId}) =>
 final class ChatPushNavigation {
   ChatPushNavigation({
     required this.publicChatAppId,
-    required bool Function() isCurrent,
-    required bool Function() isReady,
+    required this._isCurrent,
+    required this._isReady,
     required Stream<ChatClientState> states,
-    required Future<ChatConversation> Function(String) resolve,
-    required Future<void> Function(String) reportOpen,
+    required this._resolve,
+    required this._reportOpen,
     required this.onNavigate,
     this.pendingLifetime = const Duration(minutes: 2),
-  }) : _isCurrent = isCurrent,
-       _isReady = isReady,
-       _resolve = resolve,
-       _reportOpen = reportOpen {
+  }) {
     if (pendingLifetime <= Duration.zero ||
         pendingLifetime > const Duration(minutes: 5)) {
       throw ArgumentError.value(pendingLifetime, 'pendingLifetime');

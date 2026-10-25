@@ -164,7 +164,7 @@ void main() {
           return transport.respond(call);
         };
       }
-      if (variant.$6 == 'history')
+      if (variant.$6 == 'history') {
         transport.messages.addAll([
           {
             ...message(
@@ -186,13 +186,15 @@ void main() {
             'createdAt': at,
           },
         ]);
+      }
       // English shows the optional contact form; Indonesian shows it not offered.
-      if (variant.$1 == 'en_light_history')
+      if (variant.$1 == 'en_light_history') {
         transport.contact = {
           'email': '',
           'dismissed': false,
           'canRequest': true,
         };
+      }
       final client = await makeClient(transport);
       final key = GlobalKey();
       await tester.pumpWidget(
@@ -241,8 +243,9 @@ void main() {
         transport.sockets.single.emit('realtime.ready', {'cursor': 'golden'});
         await tester.pumpAndSettle();
       }
-      if (variant.$6 == 'queue')
+      if (variant.$6 == 'queue') {
         expect(find.text('Dalam antrean'), findsOneWidget);
+      }
       if (variant.$6 == 'setup') {
         await tester.tap(find.text('Send us a message'));
         await tester.pumpAndSettle();

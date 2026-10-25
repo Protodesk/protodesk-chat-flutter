@@ -102,8 +102,9 @@ class HelpServer {
         },
       });
     }
-    if (path.endsWith('/bootstrap'))
+    if (path.endsWith('/bootstrap')) {
       return ChatResponse(200, bootstrap(help: help));
+    }
     if (!path.contains('/help-center')) return transport.respond(call);
     await gate?.future;
     if (!help) {

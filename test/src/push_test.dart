@@ -99,11 +99,13 @@ void main() {
     final transport = FakeTransport();
     var attempt = 0;
     transport.handler = (call) async {
-      if (!call.uri.path.contains('push-targets'))
+      if (!call.uri.path.contains('push-targets')) {
         return transport.respond(call);
+      }
       attempt++;
-      if (attempt == 1)
+      if (attempt == 1) {
         return const ChatResponse(503, {'code': 'chat.unavailable'});
+      }
       return const ChatResponse(201, {'id': 'push_target', 'status': 'active'});
     };
     final client = await makeClient(transport);
@@ -129,10 +131,12 @@ void main() {
       final transport = FakeTransport();
       var fail = true;
       transport.handler = (call) async {
-        if (!call.uri.path.contains('push-targets'))
+        if (!call.uri.path.contains('push-targets')) {
           return transport.respond(call);
-        if (call.method == 'DELETE' && fail)
+        }
+        if (call.method == 'DELETE' && fail) {
           return const ChatResponse(503, {'code': 'chat.unavailable'});
+        }
         return const ChatResponse(200, {
           'id': 'push_target',
           'status': 'active',

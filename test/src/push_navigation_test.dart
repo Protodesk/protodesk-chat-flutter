@@ -151,8 +151,9 @@ void main() {
       final login = Completer<ChatResponse>();
       final resolve = Completer<ChatResponse>();
       transport.handler = (call) async {
-        if (call.uri.path == '/v1/chat/sessions' && call.method == 'POST')
+        if (call.uri.path == '/v1/chat/sessions' && call.method == 'POST') {
           return login.future;
+        }
         if (call.uri.path.endsWith('/$conv')) return resolve.future;
         return transport.respond(call);
       };
@@ -284,13 +285,15 @@ void main() {
     final refresh = Completer<ChatResponse>();
     t.handler = (call) async {
       if (call.uri.path.endsWith('/$conv')) {
-        if (++lookups == 1)
+        if (++lookups == 1) {
           return const ChatResponse(401, {'code': 'chat.session_expired'});
+        }
         return ChatResponse(200, {...conversation(), 'id': conv});
       }
       if (call.uri.path.endsWith('/sessions/refresh')) return refresh.future;
-      if (call.uri.path.endsWith('/open'))
+      if (call.uri.path.endsWith('/open')) {
         return const ChatResponse(503, {'code': 'chat.unavailable'});
+      }
       return t.respond(call);
     };
     final c = await makeClient(t);

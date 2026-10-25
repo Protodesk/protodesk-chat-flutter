@@ -122,13 +122,13 @@ final class ChatHelpArticleSummary {
 }
 
 final class ChatHelpArticle extends ChatHelpArticleSummary {
-  ChatHelpArticle._(Map json)
+  ChatHelpArticle._(super.json)
     : bodyMarkdown = json['bodyMarkdown'] as String,
       relatedArticles = List.unmodifiable([
         for (final value in json['relatedArticles'] as List? ?? const [])
           ChatHelpRelatedArticle._(value as Map),
       ]),
-      super._(json);
+      super._();
 
   factory ChatHelpArticle.fromJson(Map<String, dynamic> json) =>
       _parse(() => ChatHelpArticle._(json));

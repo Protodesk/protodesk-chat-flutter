@@ -348,8 +348,9 @@ class DeleteFailingStorage extends SecureMemory {
   bool failDelete = false;
   @override
   Future<void> delete(String key) async {
-    if (failDelete && key.endsWith('.outbox'))
+    if (failDelete && key.endsWith('.outbox')) {
       throw StateError('secure store unavailable');
+    }
     await super.delete(key);
   }
 }

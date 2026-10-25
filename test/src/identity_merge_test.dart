@@ -12,15 +12,18 @@ import 'persistence_test.dart' show SecureMemory, anonymous, stored, code;
 FakeTransport mergeTransport() {
   final transport = FakeTransport();
   transport.handler = (call) async {
-    if (call.uri.path.endsWith('/bootstrap'))
+    if (call.uri.path.endsWith('/bootstrap')) {
       return const ChatResponse(200, {
         'unreadCount': 0,
         'capabilities': {'identityMerge': true},
       });
-    if (call.uri.path.endsWith('/identity/merge'))
+    }
+    if (call.uri.path.endsWith('/identity/merge')) {
       return ChatResponse(200, session(token: 'merged'));
-    if (call.uri.path.endsWith('/sessions/anonymous'))
+    }
+    if (call.uri.path.endsWith('/sessions/anonymous')) {
       return ChatResponse(201, anonymous());
+    }
     return transport.respond(call);
   };
   return transport;
@@ -133,11 +136,12 @@ void main() {
       final transport = mergeTransport();
       final old = transport.handler!;
       transport.handler = (call) async {
-        if (call.uri.path.endsWith('/identity/merge'))
+        if (call.uri.path.endsWith('/identity/merge')) {
           throw const ProtodeskChatException(
             'chat.network_unavailable',
             retryable: true,
           );
+        }
         return old(call);
       };
       final client = await makeClient(transport);

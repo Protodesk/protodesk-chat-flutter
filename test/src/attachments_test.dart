@@ -107,11 +107,12 @@ void main() {
     final uploads = manager((m, p, b, k) async {
       if (p.endsWith('/complete')) {
         keys.add(k);
-        if (++attempts == 1)
+        if (++attempts == 1) {
           throw const ProtodeskChatException(
             'chat.attachment_unavailable',
             retryable: true,
           );
+        }
         return readyAttachment();
       }
       return capability();

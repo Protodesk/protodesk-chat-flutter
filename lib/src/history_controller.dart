@@ -168,23 +168,26 @@ final class ChatHistoryController {
         rows = page.data.map((v) => v.toJson()).toList();
         more = page.hasMore;
         next = page.nextCursor;
-        if (rows.any((v) => v['conversationId'] != conversationId))
+        if (rows.any((v) => v['conversationId'] != conversationId)) {
           throw const ProtodeskChatException('chat.invalid_page');
+        }
       }
       if (!_active(generation)) return;
-      if (_overflow)
+      if (_overflow) {
         throw const ProtodeskChatException(
           'chat.history_refresh_required',
           retryable: true,
         );
+      }
       _validateCursor(more, next, cursor);
       // Older pages may overlap with rows updated by realtime while HTTP waited.
       final merged = <String, Map<String, dynamic>>{};
       for (final row in [...rows, if (_loaded) ...(_page['data'] as List)]) {
         final id = row['id'] as String;
         final previous = merged[id];
-        if (previous == null || !_version(row).isBefore(_version(previous)))
+        if (previous == null || !_version(row).isBefore(_version(previous))) {
           merged[id] = Map<String, dynamic>.from(row);
+        }
       }
       final result = merged.values.toList()..sort(_order);
       var nextPage = <String, dynamic>{
@@ -199,10 +202,11 @@ final class ChatHistoryController {
       _loaded = true;
       if (cursor != null) _cursors.add(cursor);
     } catch (error) {
-      if (_active(generation))
+      if (_active(generation)) {
         _error = error is ProtodeskChatException
             ? error
             : const ProtodeskChatException('chat.invalid_page');
+      }
     } finally {
       if (!_disposed && generation == _generation) {
         _pending = null;
@@ -293,8 +297,9 @@ final class ChatHistoryController {
   void includeMessage(ChatMessage message) {
     if (_disposed ||
         client.state != ChatClientState.ready ||
-        message.conversationId != conversationId)
+        message.conversationId != conversationId) {
       return;
+    }
     _event(
       ChatServerEvent.fromJson({
         'id': 'local-confirmed',

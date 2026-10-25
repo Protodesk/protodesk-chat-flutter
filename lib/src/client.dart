@@ -253,16 +253,18 @@ final class ProtodeskChatClient {
     if (_persistAttachments) {
       final vault = _vault!, key = _attachmentKey, epoch = _identityEpoch;
       final owner = _historyOwner, queueEpoch = _record?['queueEpoch'];
-      if (queueEpoch == null)
+      if (queueEpoch == null) {
         throw const ProtodeskChatException(
           'sdk.attachment_persistence_unavailable',
         );
+      }
       final partition = sha256
           .convert(utf8.encode('$key:$owner:$queueEpoch'))
           .toString();
       void check() {
-        if (epoch != _identityEpoch || _state == ChatClientState.disposed)
+        if (epoch != _identityEpoch || _state == ChatClientState.disposed) {
           throw const ProtodeskChatException('chat.operation_cancelled');
+        }
       }
 
       persistence = AttachmentPersistence(
@@ -313,10 +315,11 @@ final class ProtodeskChatClient {
       if (_vault != null) {
         final previous = await _vault.read(_attachmentKey, () => _check(epoch));
         final available = await options.attachmentFileStore.isAvailable();
-        if (previous != null && !available)
+        if (previous != null && !available) {
           throw const ProtodeskChatException(
             'sdk.attachment_persistence_unavailable',
           );
+        }
         if (available) {
           final empty = sha256.convert(utf8.encode('disabled')).toString();
           await options.attachmentFileStore.retain(_vault.scope, empty, {});
@@ -325,8 +328,9 @@ final class ProtodeskChatClient {
       }
       return;
     }
-    if (_record?['queueEpoch'] == null)
+    if (_record?['queueEpoch'] == null) {
       await _save({...?_record, 'queueEpoch': newOperationId()}, epoch);
+    }
     await _attachments?.close();
     _attachments = null;
     await attachments.restore();
@@ -395,8 +399,9 @@ final class ProtodeskChatClient {
       try {
         final history = value['history'] as Map<String, dynamic>;
         _conversationPage(history['conversations'] as Map<String, dynamic>);
-        if (history['messages'] != null)
+        if (history['messages'] != null) {
           _messagePage(history['messages'] as Map<String, dynamic>);
+        }
         final cursor = value['cursor'] as String?;
         final seen = (value['seen'] as List).cast<String>();
         final watched = history['conversationId'] as String?;
@@ -501,8 +506,9 @@ final class ProtodeskChatClient {
         conversationId = read['conversationId'] as String;
         if (conversationId.isEmpty ||
             (read['throughMessageId'] as String).isEmpty ||
-            (read['unreadCount'] as int) < 0)
+            (read['unreadCount'] as int) < 0) {
           throw const FormatException();
+        }
         DateTime.parse(read['readAt'] as String);
       } catch (_) {
         throw const ProtodeskChatException('chat.invalid_event');
@@ -590,10 +596,11 @@ final class ProtodeskChatClient {
         _attachmentCleanup = _attachments!.purge();
         unawaited(
           _attachmentCleanup.catchError((Object error) {
-            if (!_errors.isClosed)
+            if (!_errors.isClosed) {
               _errors.add(
                 const ProtodeskChatException('sdk.attachment_cleanup_failed'),
               );
+            }
           }),
         );
       } else {
@@ -622,8 +629,9 @@ final class ProtodeskChatClient {
   Future<void> _save(Map<String, dynamic> value, int epoch) async {
     _check(epoch);
     final vault = _vault;
-    if (vault != null)
+    if (vault != null) {
       await vault.write(vault.key(_identityKey), value, () => _check(epoch));
+    }
     _check(epoch);
     _record = value;
   }
@@ -697,10 +705,11 @@ final class ProtodeskChatClient {
       var reset = false;
       _Session? old;
       try {
-        if (record['session'] is Map)
+        if (record['session'] is Map) {
           old = _Session.fromJson(
             Map<String, dynamic>.from(record['session'] as Map),
           );
+        }
       } on FormatException {
         /* Explicit recovery of malformed saved credentials. */
       } on TypeError {
@@ -731,12 +740,14 @@ final class ProtodeskChatClient {
             await _anonymousExchange(epoch);
           } on ProtodeskChatException catch (error) {
             if (error.code != 'chat.anonymous_resume_invalid' ||
-                error.status != 401)
+                error.status != 401) {
               rethrow;
+            }
             record = null;
           }
-          if (record != null)
+          if (record != null) {
             throw const ProtodeskChatException('chat.anonymous_reset_required');
+          }
         } else {
           record = null;
         }
@@ -778,8 +789,9 @@ final class ProtodeskChatClient {
     _check(epoch);
     final proof = response['anonymousIdentity'];
     if (proof is! Map) {
-      if (_vault != null)
+      if (_vault != null) {
         throw const ProtodeskChatException('chat.invalid_response');
+      }
       return response;
     }
     final generation = proof['generation'];
@@ -978,10 +990,12 @@ final class ProtodeskChatClient {
           );
         } catch (_) {}
       }
-      if (epoch == _identityEpoch && _state != ChatClientState.disposed)
+      if (epoch == _identityEpoch && _state != ChatClientState.disposed) {
         _setState(ChatClientState.failed);
-      if (error is FormatException || error is TypeError)
+      }
+      if (error is FormatException || error is TypeError) {
         throw const ProtodeskChatException('chat.storage_corrupt');
+      }
       rethrow;
     }
   }
@@ -1002,10 +1016,12 @@ final class ProtodeskChatClient {
     ChatIdentityTokenProvider provider, {
     required String identityKey,
   }) async {
-    if (identityKey.trim().isEmpty)
+    if (identityKey.trim().isEmpty) {
       throw ArgumentError('identityKey is required.');
-    if (_merging)
+    }
+    if (_merging) {
       throw const ProtodeskChatException('chat.identity_merge_in_progress');
+    }
     if (_state != ChatClientState.ready || _record?['kind'] != 'anonymous') {
       throw const ProtodeskChatException('chat.anonymous_identity_required');
     }
@@ -1042,8 +1058,9 @@ final class ProtodeskChatClient {
       _check(epoch);
       final token = await provider();
       _check(epoch);
-      if (token.isEmpty)
+      if (token.isEmpty) {
         throw const ProtodeskChatException('chat.identity_token_invalid');
+      }
       final marker = {
         ...previousRecord,
         'session': null,
@@ -1112,10 +1129,12 @@ final class ProtodeskChatClient {
     ChatIdentityTokenProvider provider, {
     required String identityKey,
   }) async {
-    if (_merging)
+    if (_merging) {
       throw const ProtodeskChatException('chat.identity_merge_in_progress');
-    if (identityKey.trim().isEmpty)
+    }
+    if (identityKey.trim().isEmpty) {
       throw ArgumentError('identityKey is required.');
+    }
     _requireMergeIdle();
     if (_state != ChatClientState.failed &&
         _state != ChatClientState.signedOut) {
@@ -1211,7 +1230,7 @@ final class ProtodeskChatClient {
     final response = await _transport.request(method, uri, {
       'Accept': 'application/json',
       if (accessToken != null) 'Authorization': 'Bearer $accessToken',
-      if (idempotencyKey != null) 'Idempotency-Key': idempotencyKey,
+      'Idempotency-Key': ?idempotencyKey,
     }, body);
     if (response.status < 200 || response.status >= 300) {
       final error = response.body['error'];
@@ -1273,14 +1292,16 @@ final class ProtodeskChatClient {
   }) async {
     _check(epoch);
     final current = _session;
-    if (current == null)
+    if (current == null) {
       throw const ProtodeskChatException('chat.session_required');
+    }
     if (rejected != null && !identical(current, rejected)) return current;
     if (!force &&
         current.expires.isAfter(
           DateTime.now().add(const Duration(seconds: 30)),
-        ))
+        )) {
       return current;
+    }
     final pending = _refreshing;
     if (pending != null) return pending;
     final future = _refresh(current, epoch);
@@ -1417,8 +1438,9 @@ final class ProtodeskChatClient {
     }
 
     check();
-    if (_pushTargetsEpoch == epoch && _pushTargets != null)
+    if (_pushTargetsEpoch == epoch && _pushTargets != null) {
       return _pushTargets!;
+    }
     _pushTargetsEpoch = epoch;
     final vault = _vault;
     final key = vault == null ? null : _pushKey;
@@ -1487,8 +1509,9 @@ final class ProtodeskChatClient {
         'GET',
         '/v1/chat/bootstrap',
       ).timeout(const Duration(seconds: 10));
-      if (data['capabilities'] is Map)
+      if (data['capabilities'] is Map) {
         server = Map<Object?, Object?>.from(data['capabilities']);
+      }
     } catch (_) {
       /* Never export transport errors or response bodies. */
     }
@@ -1530,8 +1553,9 @@ final class ProtodeskChatClient {
     }
     final capabilities = json['capabilities'];
     _typingEnabled = capabilities is Map && capabilities['typing'] == true;
-    if (!_typingEnabled && _typingConversation != null)
+    if (!_typingEnabled && _typingConversation != null) {
       setTyping(_typingConversation!, false);
+    }
     return count;
   }
 
@@ -1555,8 +1579,9 @@ final class ProtodeskChatClient {
       final result = ChatReadState.fromJson(json);
       if (result.conversationId != conversationId ||
           result.unreadCount < 0 ||
-          result.throughMessageId.isEmpty)
+          result.throughMessageId.isEmpty) {
         throw const FormatException();
+      }
       _readReports.add(result);
       return result;
     } catch (_) {
@@ -1568,21 +1593,24 @@ final class ProtodeskChatClient {
   /// Refreshes are throttled to three seconds and stop after five seconds idle.
   void setTyping(String conversationId, bool typing) {
     if (conversationId.isEmpty ||
-        (!typing && _typingConversation != conversationId))
+        (!typing && _typingConversation != conversationId)) {
       return;
+    }
     if (typing && !_typingEnabled) return;
     if (_state != ChatClientState.ready ||
         _connectionState != ChatConnectionState.connected ||
-        _socket == null)
+        _socket == null) {
       return;
+    }
     if (_typingConversation != null && _typingConversation != conversationId) {
       _sendTyping(_typingConversation!, false);
       _typingSentAt = null;
     }
     _typingIdle?.cancel();
     if (!typing) {
-      if (_typingConversation == conversationId)
+      if (_typingConversation == conversationId) {
         _sendTyping(conversationId, false);
+      }
       _typingConversation = null;
       _typingSentAt = null;
       return;
@@ -1651,14 +1679,17 @@ final class ProtodeskChatClient {
           value.expiresAt.isBefore(value.occurredAt) ||
           value.expiresAt.difference(value.occurredAt) >
               const Duration(seconds: 8) ||
-          value.expiresAt.difference(now) > const Duration(seconds: 8))
+          value.expiresAt.difference(now) > const Duration(seconds: 8)) {
         return;
+      }
       final previous = _typingStates[value.stateKey];
-      if (previous != null && !value.occurredAt.isAfter(previous.occurredAt))
+      if (previous != null && !value.occurredAt.isAfter(previous.occurredAt)) {
         return;
+      }
       if (!_typingStates.containsKey(value.stateKey) &&
-          _typingStates.length >= 128)
+          _typingStates.length >= 128) {
         return;
+      }
       final active = value.typing && value.expiresAt.isAfter(now);
       final state = ChatTypingState(
         value.conversationId,
@@ -1792,8 +1823,9 @@ final class ProtodeskChatClient {
   ) {
     try {
       final value = ChatAppConfiguration.fromBootstrap(json);
-      if (epoch == _identityEpoch)
+      if (epoch == _identityEpoch) {
         _configuration = (epoch: epoch, value: value);
+      }
       return value;
     } on ProtodeskChatException {
       return null;
@@ -1910,7 +1942,7 @@ final class ProtodeskChatClient {
         body: {
           'subject': subject,
           'preChat': preChat,
-          if (routingChoiceId != null) 'routingChoiceId': routingChoiceId,
+          'routingChoiceId': ?routingChoiceId,
           if (effectiveContext != null) 'context': effectiveContext.toJson(),
           if (externalObject != null) 'externalObject': externalObject.toJson(),
         },
@@ -2008,8 +2040,9 @@ final class ProtodeskChatClient {
 
   /// Starts one foreground reconnect loop. Observe connectionStates for readiness.
   Future<void> connect() async {
-    if (_state != ChatClientState.ready)
+    if (_state != ChatClientState.ready) {
       throw const ProtodeskChatException('chat.session_required');
+    }
     _queueActive = true;
     _sendQueue?.setActive(true);
     if (_connectionState != ChatConnectionState.disconnected) return;
@@ -2021,8 +2054,9 @@ final class ProtodeskChatClient {
       // An invalidated ticket/handshake is allowed to finish and close before
       // another attempt starts, even during rapid background/foreground churn.
       if (previous != null) await previous;
-      if (_active(generation, identity))
+      if (_active(generation, identity)) {
         await _runConnection(generation, identity);
+      }
     }();
     _connectionTask = task;
     unawaited(task);
@@ -2132,15 +2166,18 @@ final class ProtodeskChatClient {
         frames:
         await for (final raw in _boundedFrames(socket)) {
           if (!_active(generation, identity)) break;
-          if (raw is! String || utf8.encode(raw).length > 262144)
+          if (raw is! String || utf8.encode(raw).length > 262144) {
             throw const ProtodeskChatException('chat.invalid_frame');
+          }
           final frame = jsonDecode(raw) as Map<String, dynamic>;
-          if (frame['protocolVersion'] != 1)
+          if (frame['protocolVersion'] != 1) {
             throw const ProtodeskChatException('chat.protocol_unsupported');
+          }
           switch (frame['type']) {
             case 'realtime.ready':
-              if (readyAt != null)
+              if (readyAt != null) {
                 throw const ProtodeskChatException('chat.invalid_frame');
+              }
               await _reconcile(
                 frame['cursor'] as String?,
                 {..._seen},
@@ -2151,8 +2188,9 @@ final class ProtodeskChatClient {
               _setConnection(ChatConnectionState.connected);
               _changes.add(null);
             case 'realtime.event':
-              if (readyAt == null)
+              if (readyAt == null) {
                 throw const ProtodeskChatException('chat.invalid_frame');
+              }
               final event = ChatServerEvent.fromJson(
                 frame['event'] as Map<String, dynamic>,
               );
@@ -2226,8 +2264,9 @@ final class ProtodeskChatClient {
         break;
       }
       if (readyAt != null &&
-          DateTime.now().difference(readyAt) >= const Duration(seconds: 30))
+          DateTime.now().difference(readyAt) >= const Duration(seconds: 30)) {
         attempt = 0;
+      }
       attempt++;
     }
   }
@@ -2243,16 +2282,18 @@ final class ProtodeskChatClient {
     if (_delayDone case final done? when !done.isCompleted) done.complete();
     final socket = _socket;
     _socket = null;
-    if (_state != ChatClientState.disposed)
+    if (_state != ChatClientState.disposed) {
       _setConnection(ChatConnectionState.disconnected);
+    }
     if (socket != null) await socket.close();
   }
 
   /// Local isolation happens first even if remote revocation fails. A thrown
   /// error means remote logout is unconfirmed; it never restores local access.
   Future<void> logout() async {
-    if (_state == ChatClientState.disposed)
+    if (_state == ChatClientState.disposed) {
       throw const ProtodeskChatException('chat.disposed');
+    }
     final previous = _session;
     final pendingUploads =
         _attachments?.pendingRemoteUploadIds ?? const <String>[];
@@ -2326,8 +2367,9 @@ final class ProtodeskChatClient {
     ]);
     for (final error in results) {
       if (error is ProtodeskChatException &&
-          error.code == 'chat.operation_cancelled')
+          error.code == 'chat.operation_cancelled') {
         continue;
+      }
       if (error != null) throw error;
     }
   }

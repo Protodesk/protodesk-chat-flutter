@@ -53,8 +53,8 @@ def stage(source, destination):
                 or path.stat().st_size > 2 * 1024 * 1024):
             raise ValueError('Unexpected linked or oversized release input.')
     pubspec = (source / 'pubspec.yaml').read_text()
-    if not re.search(r'^publish_to: none$', pubspec, re.M):
-        raise ValueError('Source must retain publish_to: none until publication is explicitly approved.')
+    if re.search(r'^publish_to:', pubspec, re.M):
+        raise ValueError('pubspec.yaml must not set publish_to; pub.dev verifies the repository copy.')
     version = re.search(r'^version: (\S+)$', pubspec, re.M).group(1)
     if not re.search(r'^## ' + re.escape(version) + r'$', (source / 'CHANGELOG.md').read_text(), re.M):
         raise ValueError('Version needs a matching changelog heading.')
@@ -66,7 +66,7 @@ def stage(source, destination):
             target.write_text(path.read_text().replace('docs/', 'doc/guides/').replace('examples/push_adapters', 'example/push_adapters'))
         else:
             shutil.copyfile(path, target)
-    (destination / 'pubspec.yaml').write_text(re.sub(r'^publish_to: none\n', '', pubspec, flags=re.M))
+    (destination / 'pubspec.yaml').write_text(pubspec)
     # Candidate examples are source snippets; complete native hosts/tests stay in the repository.
     return version, sorted(str(package_path(p.relative_to(source))) for p in files)
 
@@ -80,7 +80,7 @@ def main():
     except (ValueError, OSError) as error:
         print(f'Release staging failed: {type(error).__name__}', file=sys.stderr)
         return 1
-    print(f'Candidate {version}: {len(files)} allowlisted files. Source remains unpublished.')
+    print(f'Candidate {version}: {len(files)} allowlisted files. Nothing was published.')
     for path in files:
         print(path)
     if not (ROOT / 'LICENSE').exists():

@@ -66,8 +66,9 @@ final class ChatTransferCancellation {
   }
 
   void check() {
-    if (_cancelled)
+    if (_cancelled) {
       throw const ProtodeskChatException('chat.operation_cancelled');
+    }
   }
 }
 
@@ -275,20 +276,15 @@ typedef AttachmentRequest = Future<Map<String, dynamic>> Function(
 /// resume with bounded retries only after an explicit foreground activation.
 final class ChatAttachments {
   ChatAttachments({
-    required AttachmentRequest request,
-    required bool Function() available,
-    required String Function() operationId,
+    required this._request,
+    required this._available,
+    required this._operationId,
     required Set<Uri> storageOrigins,
     ChatAttachmentTransport? transport,
-    AttachmentPersistence? persistence,
-    Future<ChatMessage> Function(String, String, String, List<String>)? send,
+    this._persistence,
+    this._send,
     DateTime Function()? now,
-  }) : _persistence = persistence,
-       _send = send,
-       _now = now ?? DateTime.now,
-       _request = request,
-       _available = available,
-       _operationId = operationId,
+  }) : _now = now ?? DateTime.now,
        _origins = Set.unmodifiable(storageOrigins),
        _transport = transport ?? NativeChatAttachmentTransport() {
     validateStorageOrigins(_origins);
@@ -378,21 +374,24 @@ final class ChatAttachments {
     if (_closed || !_available()) {
       throw const ProtodeskChatException('sdk.attachment_offline_disabled');
     }
-    if (_origins.isEmpty)
+    if (_origins.isEmpty) {
       throw const ProtodeskChatException('sdk.attachment_storage_unconfigured');
+    }
   }
 
   ChatAttachmentUpload upload(
     String conversationId,
     ChatAttachmentSource source,
   ) {
-    if (isPersistent)
+    if (isPersistent) {
       throw const ProtodeskChatException(
         'sdk.attachment_durable_enqueue_required',
       );
+    }
     _checkAvailable();
-    if (conversationId.isEmpty)
+    if (conversationId.isEmpty) {
       throw const ProtodeskChatException('chat.attachment_invalid');
+    }
     if (_items.length >= 10 ||
         _items.fold<int>(0, (n, u) => n + (u.source?.sizeBytes ?? 0)) +
                 source.sizeBytes >
@@ -531,10 +530,11 @@ final class ChatAttachments {
       }
       final source = item.source;
       if (!item._uploaded) {
-        if (source == null)
+        if (source == null) {
           throw const ProtodeskChatException(
             'sdk.attachment_source_unavailable',
           );
+        }
         item._state = ChatUploadState.initiating;
         item._sent = 0;
         _emit();
@@ -778,8 +778,9 @@ final class ChatAttachments {
         attachment.sizeBytes > 16 * 1024 * 1024) {
       throw const ProtodeskChatException('chat.attachment_invalid');
     }
-    if (_downloads.length + _items.where((u) => u._running).length >= 3)
+    if (_downloads.length + _items.where((u) => u._running).length >= 3) {
       throw const ProtodeskChatException('sdk.attachment_queue_full');
+    }
     final generation = _generation;
     final cancel = ChatTransferCancellation();
     _downloads.add(cancel);
@@ -797,8 +798,9 @@ final class ChatAttachments {
         cancel,
       );
       cancel.check();
-      if (generation != _generation || bytes.length != attachment.sizeBytes)
+      if (generation != _generation || bytes.length != attachment.sizeBytes) {
         throw const ProtodeskChatException('sdk.attachment_invalid_response');
+      }
       return bytes;
     } finally {
       _downloads.remove(cancel);
@@ -885,12 +887,14 @@ final class ChatAttachments {
     final generation = _generation;
     final snapshot = _snapshot();
     final result = _writes.then((_) async {
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
-      if (_storageBlocked && !recover)
+      }
+      if (_storageBlocked && !recover) {
         throw const ProtodeskChatException(
           'sdk.attachment_persistence_unavailable',
         );
+      }
       try {
         await _persistence!.save(snapshot);
       } catch (_) {
@@ -902,7 +906,7 @@ final class ChatAttachments {
         throw _storageError!;
       }
     });
-    _writes = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    _writes = result.then<void>((_) {}, onError: (Object _, StackTrace _) {});
     return result;
   }
 
@@ -999,7 +1003,7 @@ final class ChatAttachments {
     final task = _stage(conversationId, source);
     final settled = task.then<void>(
       (_) {},
-      onError: (Object _, StackTrace __) {},
+      onError: (Object _, StackTrace _) {},
     );
     _preparing.add(settled);
     unawaited(settled.then((_) => _preparing.remove(settled)));
@@ -1011,16 +1015,19 @@ final class ChatAttachments {
     ChatAttachmentSource source,
   ) async {
     if (!isPersistent) return upload(conversationId, source);
-    if (!_restored || _closed || _storageBlocked)
+    if (!_restored || _closed || _storageBlocked) {
       throw const ProtodeskChatException(
         'sdk.attachment_persistence_unavailable',
       );
+    }
     if (conversationId.isEmpty ||
         conversationId.length > 128 ||
-        _origins.isEmpty)
+        _origins.isEmpty) {
       throw const ProtodeskChatException('chat.attachment_invalid');
-    if (_drafts.any((d) => d.conversationId == conversationId))
+    }
+    if (_drafts.any((d) => d.conversationId == conversationId)) {
       throw const ProtodeskChatException('sdk.attachment_draft_frozen');
+    }
     if (_items.length >= 10 ||
         _items.fold<int>(0, (n, u) => n + u.sizeBytes) + source.sizeBytes >
             64 * 1024 * 1024) {
@@ -1048,12 +1055,14 @@ final class ChatAttachments {
           'sdk.attachment_persistence_unavailable',
         );
       }
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       item._staged = true;
       await _persist();
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       item._committed = true;
       item._source = null;
       _emit();
@@ -1079,7 +1088,7 @@ final class ChatAttachments {
     final task = _replaceSource(item, source);
     final settled = task.then<void>(
       (_) {},
-      onError: (Object _, StackTrace __) {},
+      onError: (Object _, StackTrace _) {},
     );
     _preparing.add(settled);
     unawaited(settled.then((_) => _preparing.remove(settled)));
@@ -1105,8 +1114,9 @@ final class ChatAttachments {
     final p = _persistence!, generation = _generation;
     await p.files.write(p.scope, p.partition, item._handle!, source.bytes);
     final bytes = await p.files.read(p.scope, p.partition, item._handle!);
-    if (sha256.convert(bytes).toString() != item._digest)
+    if (sha256.convert(bytes).toString() != item._digest) {
       throw const ProtodeskChatException('sdk.attachment_source_unavailable');
+    }
     if (_closed || generation != _generation || !_items.contains(item)) {
       await _deleteBody(item);
       throw const ProtodeskChatException('chat.operation_cancelled');
@@ -1122,26 +1132,30 @@ final class ChatAttachments {
   Future<void> restore() async {
     if (!isPersistent || _restored) return;
     final p = _persistence!, generation = _generation;
-    if (!await p.files.isAvailable())
+    if (!await p.files.isAvailable()) {
       throw const ProtodeskChatException(
         'sdk.attachment_persistence_unavailable',
       );
+    }
     final value = await p.load();
-    if (_closed || generation != _generation)
+    if (_closed || generation != _generation) {
       throw const ProtodeskChatException('chat.operation_cancelled');
+    }
     try {
       if (value != null) {
         if (value['attachmentVersion'] != 1 ||
             value['items'] is! List ||
-            (value['items'] as List).length > 10)
+            (value['items'] as List).length > 10) {
           throw const FormatException();
+        }
         final seen = <String>{};
         var total = 0;
         for (final raw in value['items'] as List) {
           final v = Map<String, dynamic>.from(raw as Map);
           final id = v['id'] as String;
-          if (!RegExp(r'^[a-f0-9-]{36}$').hasMatch(id) || !seen.add(id))
+          if (!RegExp(r'^[a-f0-9-]{36}$').hasMatch(id) || !seen.add(id)) {
             throw const FormatException();
+          }
           final item = ChatAttachmentUpload._restored(
             id,
             v['conversationId'] as String,
@@ -1154,8 +1168,9 @@ final class ChatAttachments {
               item.conversationId.length > 128 ||
               item.sizeBytes <= 0 ||
               item.sizeBytes > 16 * 1024 * 1024 ||
-              item.createdAt.isAfter(_now().add(const Duration(minutes: 5))))
+              item.createdAt.isAfter(_now().add(const Duration(minutes: 5)))) {
             throw const FormatException();
+          }
           // Validate metadata without allocating a body-sized buffer.
           ChatAttachmentSource(
             filename: item.filename,
@@ -1167,23 +1182,28 @@ final class ChatAttachments {
           item._handle = v['handle'] as String;
           item._digest = v['digest'] as String;
           if (item._handle != id ||
-              !RegExp(r'^[a-f0-9]{64}$').hasMatch(item._digest!))
+              !RegExp(r'^[a-f0-9]{64}$').hasMatch(item._digest!)) {
             throw const FormatException();
+          }
           item._state = ChatUploadState.values.byName(v['state'] as String);
           item._attempts = v['attempts'] as int;
           item._remoteGeneration = v['remoteGeneration'] as int;
           if (item._attempts < 0 ||
               item._attempts > 6 ||
               item._remoteGeneration < 0 ||
-              item._remoteGeneration > 1000)
+              item._remoteGeneration > 1000) {
             throw const FormatException();
+          }
           item._uploadId = v['uploadId'] as String?;
           item._attachmentId = v['attachmentId'] as String?;
-          if ((item._uploadId == null) != (item._attachmentId == null))
+          if ((item._uploadId == null) != (item._attachmentId == null)) {
             throw const FormatException();
+          }
           for (final remoteId in [item._uploadId, item._attachmentId]) {
-            if (remoteId != null && (remoteId.isEmpty || remoteId.length > 128))
+            if (remoteId != null &&
+                (remoteId.isEmpty || remoteId.length > 128)) {
               throw const FormatException();
+            }
           }
           item._remoteExpiry = v['remoteExpiry'] == null
               ? null
@@ -1194,20 +1214,23 @@ final class ChatAttachments {
           item._uploaded = v['uploaded'] as bool;
           item._putAttempted = v['putAttempted'] as bool;
           if (item._putAttempted &&
-              (item._uploadId == null || item._remoteExpiry == null))
+              (item._uploadId == null || item._remoteExpiry == null)) {
             throw const FormatException();
+          }
           if (v['error'] != null) {
             final code = v['error']['code'] as String;
-            if (!RegExp(r'^[a-z][a-z0-9_.]{0,100}$').hasMatch(code))
+            if (!RegExp(r'^[a-z][a-z0-9_.]{0,100}$').hasMatch(code)) {
               throw const FormatException();
+            }
             item._error = ProtodeskChatException(
               code,
               retryable: v['error']['retryable'] as bool,
             );
           }
           if (!item.expiresAt.isAfter(_now()) ||
-              item.state == ChatUploadState.canceled)
+              item.state == ChatUploadState.canceled) {
             continue;
+          }
           if (item.state == ChatUploadState.ready) {
             if (item._attachmentId == null) throw const FormatException();
             item._attachment = ChatAttachment.fromJson({
@@ -1225,8 +1248,9 @@ final class ChatAttachments {
                 item._handle!,
               );
               if (bytes.length != item.sizeBytes ||
-                  sha256.convert(bytes).toString() != item._digest)
+                  sha256.convert(bytes).toString() != item._digest) {
                 throw const FormatException();
+              }
             } catch (_) {
               item._state = ChatUploadState.failed;
               item._error = const ProtodeskChatException(
@@ -1247,11 +1271,12 @@ final class ChatAttachments {
               item._state = item._attempts >= 6
                   ? ChatUploadState.failed
                   : ChatUploadState.queued;
-              if (item._attempts >= 6)
+              if (item._attempts >= 6) {
                 item._error = const ProtodeskChatException(
                   'sdk.attachment_retry_exhausted',
                   retryable: true,
                 );
+              }
             }
           }
           _items.add(item);
@@ -1270,8 +1295,9 @@ final class ChatAttachments {
               draft.uploadIds.isEmpty ||
               draft.uploadIds.length > 10 ||
               draft.uploadIds.toSet().length != draft.uploadIds.length ||
-              _drafts.any((d) => d.conversationId == draft.conversationId))
+              _drafts.any((d) => d.conversationId == draft.conversationId)) {
             throw const FormatException();
+          }
           // Expiration discards the entire draft, never a partial attachment send.
           if (draft.uploadIds.every(
             (id) => _items.any(
@@ -1285,8 +1311,9 @@ final class ChatAttachments {
           }
         }
       }
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       await _persist();
       await p.files.retain(
         p.scope,
@@ -1342,8 +1369,9 @@ final class ChatAttachments {
     _scheduleExpiry();
     if (!_active || !_available() || _storageBlocked) return;
     for (final item in _items.toList()) {
-      if (_items.where((u) => u._running).length + _downloads.length >= 3)
+      if (_items.where((u) => u._running).length + _downloads.length >= 3) {
         break;
+      }
       if (!item._committed ||
           item._attempts >= 6 ||
           item._running ||
@@ -1351,8 +1379,9 @@ final class ChatAttachments {
           ![
             ChatUploadState.queued,
             ChatUploadState.retryWait,
-          ].contains(item.state))
+          ].contains(item.state)) {
         continue;
+      }
       if (item._retryAt != null && item._retryAt!.isAfter(_now())) continue;
       item._cancel = ChatTransferCancellation();
       item._pending = _run(item);
@@ -1390,8 +1419,9 @@ final class ChatAttachments {
         _sending.contains(conversationId) ||
         _storageBlocked ||
         _closed ||
-        !_available())
+        !_available()) {
       throw const ProtodeskChatException('sdk.attachment_send_unavailable');
+    }
     if (items.isEmpty ||
         items.length > 10 ||
         items.toSet().length != items.length ||
@@ -1410,8 +1440,10 @@ final class ChatAttachments {
         .firstOrNull;
     final ids = items.map((u) => u.id).toList();
     if (draft != null &&
-        (draft.text != text || jsonEncode(draft.uploadIds) != jsonEncode(ids)))
+        (draft.text != text ||
+            jsonEncode(draft.uploadIds) != jsonEncode(ids))) {
       throw const ProtodeskChatException('sdk.attachment_draft_frozen');
+    }
     draft ??= ChatAttachmentDraft(_operationId(), conversationId, text, ids);
     _sending.add(conversationId);
     final generation = _generation;
@@ -1420,23 +1452,26 @@ final class ChatAttachments {
         _drafts.add(draft);
         await _persist();
       }
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       final hex = sha256
           .convert(utf8.encode('attachment-message:${draft.id}'))
           .toString();
       final messageId =
           '${hex.substring(0, 8)}-${hex.substring(8, 12)}-4${hex.substring(13, 16)}-a${hex.substring(17, 20)}-${hex.substring(20, 32)}';
-      if (_storageBlocked || !_available() || (isPersistent && !_active))
+      if (_storageBlocked || !_available() || (isPersistent && !_active)) {
         throw const ProtodeskChatException('sdk.attachment_send_unavailable');
+      }
       final result = await _send(
         conversationId,
         messageId,
         text,
         items.map((u) => u.attachment!.id).toList(),
       );
-      if (_closed || generation != _generation)
+      if (_closed || generation != _generation) {
         throw const ProtodeskChatException('chat.operation_cancelled');
+      }
       // Keep the retry authority until removal is durably committed.
       _items.removeWhere(items.contains);
       _drafts.remove(draft);

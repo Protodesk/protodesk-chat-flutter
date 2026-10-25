@@ -220,11 +220,12 @@ void main() {
     final t = FakeTransport();
     final c = await makeClient(t);
     t.handler = (call) async {
-      if (call.uri.path.endsWith('/bootstrap'))
+      if (call.uri.path.endsWith('/bootstrap')) {
         return ChatResponse(200, {
           'capabilities': {'typing': true, 'token': 'SECRET'},
           'email': 'PRIVATE',
         });
+      }
       return t.respond(call);
     };
     final result = await c.inspectCapabilities();

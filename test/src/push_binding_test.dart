@@ -54,8 +54,9 @@ void main() {
       var calls = 0;
       t.handler = (call) async {
         if (call.uri.path.contains('push-targets')) {
-          if (++calls == 1)
+          if (++calls == 1) {
             return const ChatResponse(503, {'code': 'chat.unavailable'});
+          }
           return const ChatResponse(200, {
             'id': 'ptg_target',
             'status': 'active',
@@ -122,8 +123,9 @@ void main() {
     final t = FakeTransport();
     t.handler = (call) async {
       if (!call.uri.path.contains('push-targets')) return t.respond(call);
-      if (call.body?['target'] == 'invalid')
+      if (call.body?['target'] == 'invalid') {
         return const ChatResponse(422, {'code': 'chat.push_target_invalid'});
+      }
       return const ChatResponse(201, {'id': 'ptg_target', 'status': 'active'});
     };
     final c = await makeClient(t);
@@ -245,10 +247,11 @@ void main() {
       final t = FakeTransport();
       t.handler = (call) async {
         if (!call.uri.path.contains('push-targets')) return t.respond(call);
-        if (call.method == 'PUT')
+        if (call.method == 'PUT') {
           return const ChatResponse(404, {
             'code': 'chat.push_target_not_found',
           });
+        }
         return const ChatResponse(201, {
           'id': 'ptg_target',
           'status': 'active',

@@ -75,12 +75,14 @@ void main() {
       var fail = true;
       transport.handler = (c) async {
         if (c.uri.path.endsWith('/conversations')) {
-          if (c.uri.queryParameters['cursor'] == null)
+          if (c.uri.queryParameters['cursor'] == null) {
             return page([conversation()], next: 'opaque+/=');
-          if (fail)
+          }
+          if (fail) {
             return const ChatResponse(503, {
               'error': {'code': 'chat.dependency_unavailable'},
             });
+          }
           return page([
             {...conversation(), 'id': 'conv_old'},
           ]);
@@ -155,10 +157,11 @@ void main() {
     final transport = FakeTransport();
     final older = Completer<ChatResponse>();
     transport.handler = (c) async {
-      if (c.uri.path.endsWith('/messages'))
+      if (c.uri.path.endsWith('/messages')) {
         return c.uri.queryParameters['cursor'] == null
             ? page([row('msg_new', 3)], next: 'older')
             : older.future;
+      }
       return transport.respond(c);
     };
     final client = await makeClient(transport);

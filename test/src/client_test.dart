@@ -55,8 +55,9 @@ void main() {
     final transport = FakeTransport();
     final gate = Completer<ChatResponse>();
     transport.handler = (call) async {
-      if (call.uri.path.endsWith('/anonymous'))
+      if (call.uri.path.endsWith('/anonymous')) {
         return ChatResponse(201, session(expired: true));
+      }
       if (call.uri.path.endsWith('/refresh')) return gate.future;
       return transport.respond(call);
     };
@@ -80,13 +81,15 @@ void main() {
     () async {
       final transport = FakeTransport();
       transport.handler = (call) async {
-        if (call.uri.path.endsWith('/anonymous'))
+        if (call.uri.path.endsWith('/anonymous')) {
           return ChatResponse(201, session(expired: true));
-        if (call.uri.path.endsWith('/refresh'))
+        }
+        if (call.uri.path.endsWith('/refresh')) {
           throw const ProtodeskChatException(
             'chat.network_unavailable',
             retryable: true,
           );
+        }
         return transport.respond(call);
       };
       final client = await makeClient(transport);
@@ -111,10 +114,11 @@ void main() {
     final response = Completer<ChatResponse>();
     transport.handler = (call) async {
       if (call.uri.path.endsWith('/conversations')) return response.future;
-      if (call.method == 'DELETE')
+      if (call.method == 'DELETE') {
         return const ChatResponse(503, {
           'error': {'code': 'chat.dependency_unavailable'},
         });
+      }
       return transport.respond(call);
     };
     final client = await makeClient(transport);

@@ -107,8 +107,9 @@ void main() {
             }
           }
           request.response.headers.contentType = ContentType.json;
-          if (request.response.statusCode != 204)
+          if (request.response.statusCode != 204) {
             request.response.write(jsonEncode(response));
+          }
           await request.response.close();
         });
         final client = await initializeChat(

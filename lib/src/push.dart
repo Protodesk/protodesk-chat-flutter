@@ -8,24 +8,13 @@ enum ChatPushProvider { fcm, apns, onesignal }
 /// acquire a new handle after login, identity merge, or account switching.
 final class ChatPushTargets {
   ChatPushTargets({
-    required void Function() check,
-    required Future<Map<String, dynamic>> Function(
-      String method,
-      String path,
-      Map<String, dynamic>? body,
-      String? key,
-    )
-    request,
-    required String Function() newId,
-    required String platform,
-    Future<String?> Function()? loadTargetId,
-    Future<void> Function(String?)? saveTargetId,
-  }) : _check = check,
-       _request = request,
-       _newId = newId,
-       _platform = platform,
-       _loadTargetId = loadTargetId,
-       _saveTargetId = saveTargetId;
+    required this._check,
+    required this._request,
+    required this._newId,
+    required this._platform,
+    this._loadTargetId,
+    this._saveTargetId,
+  });
 
   final void Function() _check;
   final Future<Map<String, dynamic>> Function(

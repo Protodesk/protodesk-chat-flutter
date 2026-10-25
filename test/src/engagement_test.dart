@@ -186,15 +186,17 @@ void main() {
       Completer<ChatResponse>? gate;
       var total = 9;
       transport.handler = (call) async {
-        if (call.uri.path.endsWith('/bootstrap'))
+        if (call.uri.path.endsWith('/bootstrap')) {
           return gate?.future ?? ChatResponse(200, {'unreadCount': total});
-        if (call.uri.path.endsWith('/read'))
+        }
+        if (call.uri.path.endsWith('/read')) {
           return ChatResponse(200, {
             'conversationId': 'conv_test',
             'throughMessageId': 'msg_test',
             'readAt': DateTime.now().toIso8601String(),
             'unreadCount': 0,
           });
+        }
         return transport.respond(call);
       };
       final client = await makeClient(transport);

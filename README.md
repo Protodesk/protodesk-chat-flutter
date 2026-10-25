@@ -1,6 +1,6 @@
 # Protodesk Chat SDK for Flutter
 
-Native customer support chat for Flutter apps on Android and iOS (`0.1.0`, an
+Native customer support chat for Flutter apps on Android and iOS (`0.1.1`, an
 early release; see "Explicitly unfinished" below). This repository is
 separate from the staff-facing `protodesk-mobile` app. The backend owns the
 canonical protocol in `protodesk-backend/api/contracts/chat/` and
@@ -25,14 +25,10 @@ the larger target API, not the implemented surface of this preview.
 - Local logout isolation followed by remote session revocation. A revocation error is surfaced;
   it does not restore local session access. `dispose()` only releases local resources.
 
-## Use locally
+## Install
 
-In a native Flutter host's `pubspec.yaml`:
-
-```yaml
-dependencies:
-  protodesk_chat:
-    path: ../protodesk-chat-flutter
+```sh
+flutter pub add protodesk_chat
 ```
 
 ```dart
@@ -285,15 +281,15 @@ managers. See `docs/ios-swift-package-manager.md`.
 
 ## Explicitly unfinished
 
-This is **not ready for production or package publication**. `publish_to: none`
-prevents accidental release. No registry ownership or supported-device matrix is claimed.
+This is an early release: simulator-tested, not yet qualified on physical devices.
+No supported-device matrix is claimed.
 
 - Physical-device Keychain/Keystore, backup/restore, uninstall/reinstall, and process-kill acceptance.
 - Sustained-stream/device qualification, full offline history, and the full strategy's lifecycle/diagnostics API.
 - Physical-device push/attachment-storage acceptance and managed-push beta verification.
 - Full UI kit, physical-device accessibility acceptance, and release/device acceptance.
 - Flutter web transport/origin bootstrap (the current transport uses `dart:io`).
-- Real backend and device acceptance, package ownership, release signing and publishing.
+- Real backend and device acceptance.
 
 Existing backend API support does not imply these SDK features are implemented.
 No new backend environment variables are needed for this preview.

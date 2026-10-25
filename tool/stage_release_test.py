@@ -6,7 +6,7 @@ from stage_release import stage
 
 class StageTest(unittest.TestCase):
     def fixture(self, root):
-        (root / 'pubspec.yaml').write_text('name: sample\nversion: 1.0.0-dev.1\npublish_to: none\n')
+        (root / 'pubspec.yaml').write_text('name: sample\nversion: 1.0.0-dev.1\n')
         (root / 'CHANGELOG.md').write_text('## 1.0.0-dev.1\n')
         (root / 'lib').mkdir()
         (root / 'lib' / 'main.dart').write_text('// public source\n')
@@ -23,7 +23,6 @@ class StageTest(unittest.TestCase):
             target = pathlib.Path(directory) / 'candidate'
             _, files = stage(root, target)
             self.assertEqual(files, ['CHANGELOG.md', 'lib/main.dart', 'pubspec.yaml'])
-            self.assertIn('publish_to: none', (root / 'pubspec.yaml').read_text())
             self.assertNotIn('publish_to:', (target / 'pubspec.yaml').read_text())
             with self.assertRaises(ValueError):
                 stage(root, target)
@@ -56,6 +55,15 @@ class StageTest(unittest.TestCase):
                 stage(root, pathlib.Path(directory) / 'candidate')
             (root / 'lib' / 'leak.dart').unlink()
             (root / 'CHANGELOG.md').write_text('## Wrong version\n')
+            with self.assertRaises(ValueError):
+                stage(root, pathlib.Path(directory) / 'candidate')
+
+    def test_rejects_publish_to(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory) / 'source'
+            root.mkdir()
+            self.fixture(root)
+            (root / 'pubspec.yaml').write_text('name: sample\nversion: 1.0.0-dev.1\npublish_to: none\n')
             with self.assertRaises(ValueError):
                 stage(root, pathlib.Path(directory) / 'candidate')
 

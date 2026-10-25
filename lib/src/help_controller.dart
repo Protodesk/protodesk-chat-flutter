@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -26,8 +25,8 @@ final class ChatHelpController {
   final int pageSize;
   final _updates = StreamController<void>.broadcast();
   late final StreamSubscription<ChatClientState> _subscription;
-  final _articles = LinkedHashMap<String, Future<ChatHelpArticle>>();
-  final _listings = LinkedHashMap<String, ChatHelpListing>();
+  final _articles = <String, Future<ChatHelpArticle>>{};
+  final _listings = <String, ChatHelpListing>{};
   ChatHelpCenterManifest? _manifest;
   Future<void>? _loading;
   ProtodeskChatException? _error;
@@ -74,8 +73,9 @@ final class ChatHelpController {
             !const {
               'chat.help_request_invalid',
               'chat.help_center_locale_invalid',
-            }.contains(error.code))
+            }.contains(error.code)) {
           rethrow;
+        }
         _selectedLocale = null;
         manifest = await client.getHelpCenter();
       }
