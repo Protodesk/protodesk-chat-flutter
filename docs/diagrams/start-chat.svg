@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="998" height="820" viewBox="0 0 998 820" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-label="Starting a chat sequence diagram">
+<rect width="998" height="820" rx="12" fill="#ffffff"/>
+<text x="24" y="34" font-size="16" font-weight="700" fill="#18181b">Starting a chat</text>
+<line x1="119.0" y1="100" x2="119.0" y2="768" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+<line x1="309.0" y1="100" x2="309.0" y2="768" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+<line x1="499.0" y1="100" x2="499.0" y2="768" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+<line x1="689.0" y1="100" x2="689.0" y2="768" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+<line x1="879.0" y1="100" x2="879.0" y2="768" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+<rect x="32" y="170" width="934" height="230" rx="4" fill="none" stroke="#a1a1aa" stroke-width="1"/>
+<path d="M32 170 h34.480000000000004 v12 l-6 6 h-28.48 z" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1"/>
+<text x="38" y="183" font-size="11" font-weight="600" fill="#52525b">alt</text>
+<text x="74.48" y="183" font-size="11.5" fill="#52525b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">[saved session]</text>
+<line x1="32" y1="228" x2="966" y2="228" stroke="#a1a1aa" stroke-dasharray="4 3"/>
+<text x="40" y="241" font-size="11.5" fill="#52525b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">[signed-in user]</text>
+<line x1="32" y1="346" x2="966" y2="346" stroke="#a1a1aa" stroke-dasharray="4 3"/>
+<text x="40" y="359" font-size="11.5" fill="#52525b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">[anonymous visitor]</text>
+<text x="214.0" y="117" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">initializeChat(options)</text>
+<line x1="119.0" y1="124" x2="307.0" y2="124" stroke="#18181b" stroke-width="1.3"/>
+<path d="M309.0 124 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="404.0" y="151" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">read saved session</text>
+<line x1="309.0" y1="158" x2="497.0" y2="158" stroke="#18181b" stroke-width="1.3"/>
+<path d="M499.0 158 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="205" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">POST /v1/chat/sessions/refresh</text>
+<line x1="309.0" y1="212" x2="687.0" y2="212" stroke="#18181b" stroke-width="1.3"/>
+<path d="M689.0 212 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="214.0" y="255" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">identityTokenProvider()</text>
+<line x1="309.0" y1="262" x2="121.0" y2="262" stroke="#18181b" stroke-width="1.3"/>
+<path d="M119.0 262 l8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="214.0" y="289" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">single-use token from your backend</text>
+<line x1="119.0" y1="296" x2="307.0" y2="296" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M309.0 296 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="323" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">POST /v1/chat/sessions</text>
+<line x1="309.0" y1="330" x2="687.0" y2="330" stroke="#18181b" stroke-width="1.3"/>
+<path d="M689.0 330 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="373" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">POST /v1/chat/sessions/anonymous</text>
+<line x1="309.0" y1="380" x2="687.0" y2="380" stroke="#18181b" stroke-width="1.3"/>
+<path d="M689.0 380 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="415" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">session</text>
+<line x1="689.0" y1="422" x2="311.0" y2="422" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M309.0 422 l8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="404.0" y="449" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">save session</text>
+<line x1="309.0" y1="456" x2="497.0" y2="456" stroke="#18181b" stroke-width="1.3"/>
+<path d="M499.0 456 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="214.0" y="483" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">client ready</text>
+<line x1="309.0" y1="490" x2="121.0" y2="490" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M119.0 490 l8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="214.0" y="517" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">show ChatMessenger</text>
+<line x1="119.0" y1="524" x2="307.0" y2="524" stroke="#18181b" stroke-width="1.3"/>
+<path d="M309.0 524 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="551" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">GET /v1/chat/bootstrap</text>
+<line x1="309.0" y1="558" x2="687.0" y2="558" stroke="#18181b" stroke-width="1.3"/>
+<path d="M689.0 558 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="585" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">brand, greeting, Help Center</text>
+<line x1="689.0" y1="592" x2="311.0" y2="592" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M309.0 592 l8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="619" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">POST /v1/chat/realtime/ticket</text>
+<line x1="309.0" y1="626" x2="687.0" y2="626" stroke="#18181b" stroke-width="1.3"/>
+<path d="M689.0 626 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="499.0" y="653" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">one-time ticket</text>
+<line x1="689.0" y1="660" x2="311.0" y2="660" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M309.0 660 l8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="594.0" y="687" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">connect (ticket, last cursor)</text>
+<line x1="309.0" y1="694" x2="877.0" y2="694" stroke="#18181b" stroke-width="1.3"/>
+<path d="M879.0 694 l-8 -4.5 l0 9 z" fill="#18181b"/>
+<text x="594.0" y="721" text-anchor="middle" font-size="12.5" fill="#18181b" stroke="#ffffff" stroke-width="5" paint-order="stroke" stroke-linejoin="round">ready + missed events</text>
+<line x1="879.0" y1="728" x2="311.0" y2="728" stroke="#18181b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M309.0 728 l8 -4.5 l0 9 z" fill="#18181b"/>
+<rect x="64.0" y="56" width="110" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="119.0" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Your app</text>
+<rect x="64.0" y="768" width="110" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="119.0" y="791" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Your app</text>
+<rect x="247.68" y="56" width="122.64000000000001" height="36" rx="8" fill="#e6f6fb" stroke="#00a5d1" stroke-width="1.2"/>
+<text x="309.0" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Protodesk SDK</text>
+<rect x="247.68" y="768" width="122.64000000000001" height="36" rx="8" fill="#e6f6fb" stroke="#00a5d1" stroke-width="1.2"/>
+<text x="309.0" y="791" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Protodesk SDK</text>
+<rect x="415.84" y="56" width="166.32000000000002" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="499.0" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Keychain / Keystore</text>
+<rect x="415.84" y="768" width="166.32000000000002" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="499.0" y="791" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Keychain / Keystore</text>
+<rect x="627.68" y="56" width="122.64000000000001" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="689.0" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Protodesk API</text>
+<rect x="627.68" y="768" width="122.64000000000001" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="689.0" y="791" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Protodesk API</text>
+<rect x="810.4" y="56" width="137.20000000000002" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="879.0" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Realtime socket</text>
+<rect x="810.4" y="768" width="137.20000000000002" height="36" rx="8" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+<text x="879.0" y="791" text-anchor="middle" font-size="13" font-weight="600" fill="#18181b">Realtime socket</text>
+</svg>

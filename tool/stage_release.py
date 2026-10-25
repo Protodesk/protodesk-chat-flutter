@@ -8,9 +8,11 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOT_FILES = ('.pubignore', 'pubspec.yaml', 'README.md', 'CHANGELOG.md', 'LICENSE', 'NOTICE')
-SOURCE_TREES = ('lib', 'android', 'ios', 'docs', 'example/lib', 'examples/push_adapters/lib')
+SOURCE_TREES = ('lib', 'android', 'ios', 'docs', 'screenshots', 'example/lib', 'examples/push_adapters/lib')
 EXTRA_FILES = ('example/README.md', 'example/pubspec.yaml', 'examples/push_adapters/README.md', 'examples/push_adapters/pubspec.yaml', 'examples/push_adapters/ios/ChatAPNsBridge.swift')
-SUFFIXES = {'.dart', '.java', '.kt', '.gradle', '.xml', '.swift', '.podspec', '.h', '.m', '.mm', '.md', '.plist', '.xcprivacy'}
+SUFFIXES = {'.dart', '.java', '.kt', '.gradle', '.xml', '.swift', '.podspec', '.h', '.m', '.mm', '.md', '.plist', '.xcprivacy', '.png'}
+# Repository-relative paths only; absolute GitHub URLs keep pointing at the repository.
+RELATIVE = r'(?<![\w/.-])'
 
 
 def package_path(path):
@@ -45,6 +47,8 @@ def stage(source, destination):
                 continue
             if path.is_symlink():
                 raise ValueError('Symlinks are not allowed in release source trees.')
+            if path.suffix == '.png' and relative.parts[0] != 'screenshots':
+                continue  # Only pubspec screenshots ship; docs images stay in the repository.
             if path.is_file() and path.suffix in SUFFIXES:
                 files.append(path)
     for path in files:
@@ -63,7 +67,8 @@ def stage(source, destination):
         target = destination / package_path(path.relative_to(source))
         target.parent.mkdir(parents=True, exist_ok=True)
         if path.suffix == '.md':
-            target.write_text(path.read_text().replace('docs/', 'doc/guides/').replace('examples/push_adapters', 'example/push_adapters'))
+            text = re.sub(RELATIVE + 'docs/', 'doc/guides/', path.read_text())
+            target.write_text(re.sub(RELATIVE + 'examples/push_adapters', 'example/push_adapters', text))
         else:
             shutil.copyfile(path, target)
     (destination / 'pubspec.yaml').write_text(pubspec)

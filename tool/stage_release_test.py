@@ -38,6 +38,11 @@ class StageTest(unittest.TestCase):
             stage(root, target)
             self.assertEqual((target / 'doc/guides/guide.md').read_text(),
                              'See doc/guides/guide.md')
+            url = 'https://github.com/o/r/blob/main/docs/guide.md'
+            (root / 'README.md').write_text(f'[guide]({url}) and docs/guide.md')
+            stage(root, pathlib.Path(directory) / 'with-readme')
+            self.assertEqual((pathlib.Path(directory) / 'with-readme/README.md').read_text(),
+                             f'[guide]({url}) and doc/guides/guide.md')
             outside = pathlib.Path(directory) / 'outside'
             outside.mkdir()
             (outside / 'README.md').write_text('private')

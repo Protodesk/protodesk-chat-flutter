@@ -9,6 +9,15 @@ topics:
   - sdk
   - live-chat
   - support-widget
+screenshots:
+  - description: Home tab with recent conversation and Help Center
+    path: screenshots/home.png
+  - description: A conversation with a support agent
+    path: screenshots/conversation.png
+  - description: Help Center
+    path: screenshots/help.png
+  - description: Dark theme with a message queued while offline
+    path: screenshots/dark-offline.png
 platforms:
   android:
   ios:
