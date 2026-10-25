@@ -58,8 +58,9 @@ article on first load (phase 6).
 - **P2 — Home card shadow.** In goldens the soft shadow under Home's contact card
   renders as a flat band; confirm the blur on a device and tune it if it looks
   the same.
-- **P2 — font weights in goldens.** The golden harness loads only regular
-  Roboto, so bold text there looks medium. Real devices use the platform weights.
+- **Resolved — font weights in goldens.** The refinement pass loads regular,
+  medium and bold Roboto from the pinned SDK. See `ui-refinement.md` for the
+  subsequent messenger changes and local verification boundaries.
 - **P3 — fixed status colour.** The "Connected" dot is a fixed green; consider a
   theme extension if hosts need to brand it.
 - **P3 — right-to-left chrome.** RTL layout is overflow-free, but the SDK ships

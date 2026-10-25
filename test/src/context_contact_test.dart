@@ -258,11 +258,53 @@ void main() {
       await client.dispose();
     });
 
+    testWidgets(
+      'contact expansion keeps draft and does not submit or dismiss on close',
+      (tester) async {
+        final transport = FakeTransport();
+        transport.contact = {
+          'email': '',
+          'dismissed': false,
+          'canRequest': true,
+        };
+        final client = await openThread(tester, transport);
+        expect(
+          find.widgetWithText(TextField, 'Email (optional)'),
+          findsNothing,
+        );
+        await tester.tap(find.byKey(const ValueKey('contact-expand')));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Email (optional)'),
+          'ada@example.com',
+        );
+        await tester.tap(find.byTooltip('Close'));
+        await tester.pumpAndSettle();
+        expect(contactPosts(transport), isEmpty);
+        await tester.tap(find.byKey(const ValueKey('contact-expand')));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<TextField>(
+                find.widgetWithText(TextField, 'Email (optional)'),
+              )
+              .controller!
+              .text,
+          'ada@example.com',
+        );
+        await tester.pumpWidget(const SizedBox());
+        await client.dispose();
+      },
+    );
+
     testWidgets('prompt validates, shares and confirms', (tester) async {
       final transport = FakeTransport();
       transport.contact = {'email': '', 'dismissed': false, 'canRequest': true};
       final client = await openThread(tester, transport);
       expect(find.text('Stay in touch'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Email (optional)'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('contact-expand')));
+      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Email (optional)'),
@@ -310,6 +352,8 @@ void main() {
         return transport.respond(call);
       };
       final client = await openThread(tester, transport);
+      await tester.tap(find.byKey(const ValueKey('contact-expand')));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Not now'));
       await tester.pumpAndSettle();
       expect(

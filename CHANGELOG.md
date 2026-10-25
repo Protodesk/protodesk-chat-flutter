@@ -214,3 +214,9 @@ iOS packaging: the plugin builds with Swift Package Manager
 ships a privacy manifest declaring file-metadata access (reason `C617.1`). The
 example app uses Swift Package Manager. `tool/check_ios_packaging.sh` (run by
 `check_release.sh` on macOS) builds host apps with both package managers.
+
+Messenger refinement: clearer Home hierarchy and selected navigation, unread
+conversation emphasis and an accessible new-conversation action, rounded form
+focus/error states, localized search clearing, draft-aware composer controls,
+and compact expandable contact collection with draft-preserving close. Reviewed
+phone/tablet and light/dark goldens retain the existing cyan/zinc identity.

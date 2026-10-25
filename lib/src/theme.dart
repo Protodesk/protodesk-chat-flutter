@@ -139,6 +139,7 @@ abstract final class ChatTheme {
       bodyMedium: base.bodyMedium?.copyWith(fontSize: 14, height: 1.45),
       bodySmall: base.bodySmall?.copyWith(fontSize: 12, height: 1.4),
       labelLarge: base.labelLarge?.copyWith(
+        inherit: false,
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
@@ -183,7 +184,7 @@ abstract final class ChatTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: n.surface,
-        indicatorColor: Colors.transparent,
+        indicatorColor: scheme.primaryContainer,
         height: 64,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -203,7 +204,7 @@ abstract final class ChatTheme {
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: n.surface,
-        indicatorColor: Colors.transparent,
+        indicatorColor: scheme.primaryContainer,
         elevation: 0,
         selectedIconTheme: IconThemeData(size: 22, color: scheme.onSurface),
         unselectedIconTheme: IconThemeData(
@@ -264,16 +265,22 @@ abstract final class ChatTheme {
                 : scheme.onSurfaceVariant,
           ),
         ),
-        border: const UnderlineInputBorder(borderSide: BorderSide.none),
-        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide.none),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: action, width: 1.5),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(medium)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(medium),
+          borderSide: BorderSide(color: scheme.outline),
         ),
-        errorBorder: UnderlineInputBorder(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(medium),
+          borderSide: BorderSide(color: action, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(medium),
           borderSide: BorderSide(color: scheme.error),
         ),
-        focusedErrorBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: scheme.error, width: 1.5),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(medium),
+          borderSide: BorderSide(color: scheme.error, width: 2),
         ),
       ),
       textButtonTheme: TextButtonThemeData(

@@ -24,6 +24,7 @@ class _ContactPromptState extends State<_ContactPrompt> {
   final _emailFocus = FocusNode();
   final _confirmationFocus = FocusNode();
   var _view = _ContactView.loading;
+  bool _expanded = false;
   bool _invalid = false, _failed = false, _sharedEmail = false;
   // One key per payload: an uncertain save is retried with the same key.
   String? _pendingPayload, _pendingKey;
@@ -122,6 +123,7 @@ class _ContactPromptState extends State<_ContactPrompt> {
   }
 
   Widget _panel(ThemeData theme, Widget child) => Container(
+    width: double.infinity,
     margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -134,6 +136,33 @@ class _ContactPromptState extends State<_ContactPrompt> {
 
   Widget _form(ThemeData theme) {
     final saving = _view == _ContactView.saving;
+    if (!_expanded && !saving) {
+      return _panel(
+        theme,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          children: [
+            Text(
+              _text(ChatText.contactTitle),
+              style: theme.textTheme.titleSmall,
+            ),
+            TextButton.icon(
+              key: const ValueKey('contact-expand'),
+              icon: const Icon(Icons.mail_outline_rounded, size: 18),
+              label: Text(_text(ChatText.contactExpand)),
+              onPressed: () {
+                setState(() => _expanded = true);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) _emailFocus.requestFocus();
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
     return _panel(
       theme,
       Semantics(
@@ -143,12 +172,28 @@ class _ContactPromptState extends State<_ContactPrompt> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Semantics(
-              header: true,
-              child: Text(
-                _text(ChatText.contactTitle),
-                style: theme.textTheme.titleSmall,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      _text(ChatText.contactTitle),
+                      style: theme.textTheme.titleSmall,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: _text(ChatText.close),
+                  onPressed: saving
+                      ? null
+                      : () {
+                          _emailFocus.unfocus();
+                          setState(() => _expanded = false);
+                        },
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(

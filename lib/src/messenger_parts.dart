@@ -206,7 +206,7 @@ class _ConversationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Material(
-        color: scheme.surface,
+        color: unread == null ? scheme.surface : scheme.primaryContainer,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: scheme.outlineVariant),
@@ -238,7 +238,9 @@ class _ConversationCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
+                              fontWeight: unread == null
+                                  ? FontWeight.w500
+                                  : FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -717,8 +719,8 @@ class _HomeIntro extends StatelessWidget {
                         header: true,
                         child: Text(
                           title,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
                             height: 1.1,
                           ),
                         ),

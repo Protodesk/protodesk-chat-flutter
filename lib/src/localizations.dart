@@ -74,6 +74,8 @@ enum ChatText {
   contextAttached,
   contextUnverified,
   contextVerified,
+  clearSearch,
+  contactExpand,
   contactRegion,
   contactTitle,
   contactBody,
@@ -342,6 +344,8 @@ const _en = <ChatText, String>{
   ChatText.contextAttached: 'Details attached to this conversation',
   ChatText.contextUnverified: 'Shared by this app. Not verified.',
   ChatText.contextVerified: 'Verified details',
+  ChatText.clearSearch: 'Clear search',
+  ChatText.contactExpand: 'Add email (optional)',
   ChatText.contactRegion: 'Optional contact details',
   ChatText.contactTitle: 'Stay in touch',
   ChatText.contactBody: 'Leave your email and we can follow up if you go.',
@@ -511,6 +515,8 @@ const _id = <ChatText, String>{
   ChatText.contextUnverified:
       'Dibagikan oleh aplikasi ini. Belum diverifikasi.',
   ChatText.contextVerified: 'Detail terverifikasi',
+  ChatText.clearSearch: 'Hapus pencarian',
+  ChatText.contactExpand: 'Tambah email (opsional)',
   ChatText.contactRegion: 'Detail kontak opsional',
   ChatText.contactTitle: 'Tetap terhubung',
   ChatText.contactBody:

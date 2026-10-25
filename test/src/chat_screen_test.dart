@@ -32,7 +32,41 @@ void main() {
       await tester.pumpAndSettle();
       await client.disconnect();
       await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == 'Send',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.pump();
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == 'Send',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
       await tester.enterText(find.byType(TextField), 'Waiting offline');
+      await tester.pump();
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == 'Send',
+              ),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      await tester.pump();
       await tester.tap(find.byTooltip('Send'));
       await tester.pumpAndSettle();
       expect(find.text('Waiting offline'), findsOneWidget);
@@ -44,6 +78,7 @@ void main() {
         isEmpty,
       );
       await tester.enterText(find.byType(TextField), 'Keep my draft');
+      await tester.pump();
       await tester.tap(find.byTooltip('Send'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Your send queue is full.'), findsOneWidget);
@@ -174,6 +209,7 @@ void main() {
       await tester.tap(find.text('Start a conversation'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Hello customer');
+      await tester.pump();
       await tester.tap(find.byTooltip('Send'));
       await tester.pumpAndSettle();
       expect(find.text('Retry'), findsOneWidget);

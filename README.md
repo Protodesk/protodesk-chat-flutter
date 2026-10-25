@@ -1047,3 +1047,10 @@ initialHelpArticleId:)` does the same for hosts that build their own route. Obse
 chat open/close, and accepted push-open events. The stream is lazy, broadcast,
 and has no replay. See `docs/presentation-lifecycle.md` for custom UI tracking,
 Navigator selection, options, and ownership semantics.
+
+## Messenger UI refinement
+
+The prebuilt messenger uses a compact optional email prompt, a draft-aware send
+control, visible selected navigation and unread conversation states, and a
+localized search-clear action. Starting a conversation stays above the history
+list. See `docs/ui-refinement.md` for the visual changes and verification scope.

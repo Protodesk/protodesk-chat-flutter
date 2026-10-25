@@ -154,7 +154,7 @@ void main() {
     );
     await tester.enterText(field('name'), '  Ada  ');
     await tester.enterText(field('email'), 'ada@example.com');
-    await tester.tap(find.text('Choose an option'));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Shipping').last);
     await tester.pumpAndSettle();
@@ -194,7 +194,7 @@ void main() {
       ),
       'Ada',
     );
-    await tester.tap(find.text('Choose an option'));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Billing').last);
     await tester.pumpAndSettle();
@@ -250,7 +250,7 @@ void main() {
         ),
         'Ada',
       );
-      await tester.tap(find.text('Choose an option'));
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Billing').last);
       await tester.pumpAndSettle();

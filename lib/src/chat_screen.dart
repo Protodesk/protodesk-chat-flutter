@@ -1150,19 +1150,42 @@ class _ChatScreenState extends State<ChatMessenger>
             icon: const Icon(Icons.attach_file_rounded),
             onPressed: closed || busy || _picking ? null : _pick,
           );
-    final send = IconButton(
-      tooltip: _text(ChatText.send),
-      style: IconButton.styleFrom(
-        foregroundColor: ChatBrandColors.resolve(_theme).foreground,
-      ),
-      icon: const Icon(Icons.arrow_upward_rounded, size: 22),
-      onPressed:
-          closed ||
-              _saving ||
-              _picking ||
-              _uploads.any((u) => u.state != ChatUploadState.ready)
-          ? null
-          : _send,
+    final send = ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _draft,
+      builder: (context, value, _) {
+        final canSend =
+            !closed &&
+            !_saving &&
+            !_picking &&
+            _uploads.every((u) => u.state == ChatUploadState.ready) &&
+            (value.text.trim().isNotEmpty || _uploads.isNotEmpty);
+        return Padding(
+          padding: const EdgeInsets.all(3),
+          child: IconButton.filled(
+            tooltip: _text(ChatText.send),
+            style: IconButton.styleFrom(
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              disabledBackgroundColor: scheme.surfaceContainer,
+              disabledForegroundColor: scheme.onSurfaceVariant,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            icon: _saving
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  )
+                : const Icon(Icons.arrow_upward_rounded, size: 22),
+            onPressed: canSend ? _send : null,
+          ),
+        );
+      },
     );
     final field = TextField(
       controller: _draft,
@@ -1209,22 +1232,28 @@ class _ChatScreenState extends State<ChatMessenger>
           ),
         // The mobile app's composer: one bordered surface holding the tools,
         // the field and the send arrow.
-        DecoratedBox(
-          key: const ValueKey('composer-surface'),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerLowest,
-            border: Border.all(
-              color: ChatBrandColors.resolve(_theme).borderStrong,
+        ListenableBuilder(
+          listenable: _composerFocus,
+          builder: (context, _) => DecoratedBox(
+            key: const ValueKey('composer-surface'),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLowest,
+              border: Border.all(
+                color: _composerFocus.hasFocus
+                    ? ChatBrandColors.resolve(_theme).foreground
+                    : ChatBrandColors.resolve(_theme).borderStrong,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              ?attach,
-              Expanded(child: field),
-              send,
-            ],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                ?attach,
+                Expanded(child: field),
+                send,
+              ],
+            ),
           ),
         ),
       ],
@@ -1788,6 +1817,7 @@ class _ChatScreenState extends State<ChatMessenger>
               child: _HelpSearchField(
                 controller: _homeSearch,
                 hint: _text(ChatText.searchHelp),
+                clearLabel: _text(ChatText.clearSearch),
                 onChanged: (_) {},
                 onSubmitted: (value) => _openHelp(_HelpRoot(value.trim())),
               ),
@@ -1853,38 +1883,37 @@ class _ChatScreenState extends State<ChatMessenger>
       itemCount: _conversations.length + 3,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _conversations.isEmpty
-              ? _SectionHeading(
-                  _text(ChatText.noMessages),
-                  _text(ChatText.noMessagesHint),
-                )
-              : _SectionHeading(
-                  _text(ChatText.yourConversations),
-                  _text(ChatText.pickUp),
-                );
-        }
-        if (index == _conversations.length + 1) {
-          return _pagination(messages: false);
-        }
-        if (index == _conversations.length + 2) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _conversations.isEmpty
+                  ? _SectionHeading(
+                      _text(ChatText.noMessages),
+                      _text(ChatText.noMessagesHint),
+                    )
+                  : _SectionHeading(
+                      _text(ChatText.yourConversations),
+                      _text(ChatText.pickUp),
+                    ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: FilledButton.icon(
+                  onPressed: _creating ? null : _startConversation,
+                  icon: const Icon(Icons.add_comment_outlined, size: 20),
+                  label: Text(
+                    _creating
+                        ? _text(ChatText.starting)
+                        : _text(ChatText.startConversation),
+                  ),
                 ),
               ),
-              onPressed: _creating ? null : _startConversation,
-              child: Text(
-                _creating
-                    ? _text(ChatText.starting)
-                    : _text(ChatText.startConversation),
-              ),
-            ),
+            ],
           );
         }
+        if (index == _conversations.length + 1)
+          return _pagination(messages: false);
+        if (index == _conversations.length + 2)
+          return const SizedBox(height: 24);
         final conversation = _conversations[index - 1];
         final subject = conversation.subject.isEmpty
             ? _text(ChatText.conversation)

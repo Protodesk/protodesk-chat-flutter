@@ -21,17 +21,19 @@ Future<void> loadFonts() async {
       .resolve('${flutter['rootUri']}/')
       .resolve('../../bin/cache/artifacts/material_fonts/');
   for (final entry in {
-    'Roboto': 'Roboto-Regular.ttf',
-    'MaterialIcons': 'MaterialIcons-Regular.otf',
+    'Roboto': ['Roboto-Regular.ttf', 'Roboto-Medium.ttf', 'Roboto-Bold.ttf'],
+    'MaterialIcons': ['MaterialIcons-Regular.otf'],
   }.entries) {
-    final loader = FontLoader(entry.key)
-      ..addFont(
+    final loader = FontLoader(entry.key);
+    for (final file in entry.value) {
+      loader.addFont(
         Future.value(
           ByteData.sublistView(
-            File.fromUri(root.resolve(entry.value)).readAsBytesSync(),
+            File.fromUri(root.resolve(file)).readAsBytesSync(),
           ),
         ),
       );
+    }
     await loader.load();
   }
 }
@@ -228,6 +230,7 @@ void main() {
           find.byType(TextField),
           'Pesan menunggu koneksi',
         );
+        await tester.pump();
         await tester.tap(find.byTooltip('Kirim'));
         await tester.pumpAndSettle();
       } else {

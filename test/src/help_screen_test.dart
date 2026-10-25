@@ -58,6 +58,27 @@ Finder tab(String label) =>
     find.descendant(of: navigation, matching: find.text(label));
 
 void main() {
+  testWidgets(
+    'search can be cleared back to browsing without navigating away',
+    (tester) async {
+      final transport = helpTransport();
+      final client = await pumpMessenger(tester, transport);
+      await tester.enterText(find.byType(TextField).first, 'workspace');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Clear search'), findsOneWidget);
+      await tester.tap(find.byTooltip('Clear search'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+        isEmpty,
+      );
+      expect(find.text('Browse topics'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    },
+  );
+
   testWidgets('Help tab appears only with published Help', (tester) async {
     var client = await pumpMessenger(
       tester,

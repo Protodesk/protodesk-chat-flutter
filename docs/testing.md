@@ -94,7 +94,7 @@ defines the protection level this adapter requires.
 
 ## Local results (2026-10-25)
 
-- SDK suite: 305 tests passed after the local messenger, Help, contact, and context updates; analysis is clean. Golden comparisons are included in this suite.
+- SDK suite: 307 tests passed after the messenger UI refinement, including contact disclosure/draft retention, search clearing, and empty-draft send states; analysis is clean. All 12 reviewed golden comparisons and the accessibility/layout matrix are included.
 - Example suite: 11 tests passed; SDK/example analysis clean.
 - iPhone 17 Pro / iOS 26.5 simulator: the Keychain-backed outbox/account-isolation/UI
   integration test passed after separating the unsupported file-protection dependency.

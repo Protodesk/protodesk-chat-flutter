@@ -278,6 +278,7 @@ class _HelpSectionState extends State<_HelpSection> {
           child: _HelpSearchField(
             controller: _search,
             hint: _text(ChatText.searchHelp),
+            clearLabel: _text(ChatText.clearSearch),
             onChanged: _onQuery,
             onSubmitted: _onQuery,
           ),
@@ -567,24 +568,38 @@ class _HelpSearchField extends StatelessWidget {
   const _HelpSearchField({
     required this.controller,
     required this.hint,
+    required this.clearLabel,
     required this.onChanged,
     required this.onSubmitted,
   });
   final TextEditingController controller;
-  final String hint;
+  final String hint, clearLabel;
   final ValueChanged<String> onChanged, onSubmitted;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      onSubmitted: onSubmitted,
-      textInputAction: TextInputAction.search,
-      inputFormatters: [LengthLimitingTextInputFormatter(120)],
-      decoration: InputDecoration(
-        hintText: hint,
-        suffixIcon: const Icon(Icons.search_rounded),
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) => TextField(
+        controller: controller,
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
+        textInputAction: TextInputAction.search,
+        inputFormatters: [LengthLimitingTextInputFormatter(120)],
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: value.text.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: clearLabel,
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                ),
+        ),
       ),
     );
   }
