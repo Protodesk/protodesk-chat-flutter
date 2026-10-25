@@ -23,8 +23,11 @@ transports for failure/race coverage; none need production credentials.
 - Indonesian dark phone with a disconnected, queued message and discard control.
 
 Golden generation environment: Flutter **3.47.5**, Dart **3.13.4**, macOS arm64.
-Use this toolchain/host for pixel comparisons. Renderer/font changes on another
-OS or Flutter version may require a separately reviewed baseline migration.
+`test/goldens/flutter_test_config.dart` accepts up to 1% differing pixels, because
+glyph anti-aliasing differs between macOS releases (the macOS 15 CI runner differs
+from macOS 27 baselines by at most 0.5%). Real layout or color regressions exceed
+that. A Flutter version change may still need a separately reviewed baseline
+migration.
 Tests load Roboto and MaterialIcons from the resolved Flutter SDK using
 `.dart_tool/package_config.json`; there are no absolute workstation paths or
 network fonts. Sizes, theme platform, locale, text scale and fixture content are
