@@ -9,12 +9,18 @@ import '../support/fake_transport.dart';
 FakeTransport configured({
   String greeting = 'Hi! How can we help you?',
   String status = 'open',
+  Map<String, dynamic>? identity,
 }) {
   final transport = FakeTransport();
   transport.handler = (call) async {
     final path = call.uri.path;
     if (path.endsWith('/bootstrap')) {
-      return ChatResponse(200, bootstrap(widget: {'greeting': greeting}));
+      return ChatResponse(
+        200,
+        identity == null
+            ? bootstrap(widget: {'greeting': greeting})
+            : bootstrap(widget: {'greeting': greeting}, identity: identity),
+      );
     }
     if (path.endsWith('/conversations') && call.method == 'GET') {
       return ChatResponse(200, {
@@ -53,6 +59,28 @@ Widget host(
 );
 
 void main() {
+  testWidgets('Home greets a signed-in user by name with an avatar', (
+    tester,
+  ) async {
+    final transport = configured(
+      identity: {
+        'kind': 'verified',
+        'displayName': 'Maya Putri',
+        'locale': 'en',
+        'avatarUrl': null,
+      },
+    );
+    final client = await makeClient(transport);
+    await tester.pumpWidget(host(client, section: ChatMessengerSection.home));
+    await tester.pumpAndSettle();
+    expect(find.text('Hi, Maya Putri'), findsOneWidget);
+    expect(find.text('Chat with us'), findsNothing);
+    // No image: the avatar falls back to the user's initial.
+    expect(find.text('M'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    await client.dispose();
+  });
+
   testWidgets('Messages section lists cards and starts conversations', (
     tester,
   ) async {

@@ -650,6 +650,50 @@ class _GreetingBubbleState extends State<_GreetingBubble> {
 
 /// Home's branded intro: identity row, heading and supporting copy on a soft
 /// brand tint, with room at the bottom for the overlapping contact card.
+/// A signed-in user's avatar, or their initial when there is no image.
+class _UserAvatar extends StatelessWidget {
+  const _UserAvatar({required this.name, this.url});
+  final String name;
+  final Uri? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    const extent = 32.0;
+    final initial = Center(
+      child: Text(
+        name.characters.first.toUpperCase(),
+        style: TextStyle(
+          color: scheme.onPrimaryContainer,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          height: 1,
+        ),
+        textScaler: TextScaler.noScaling,
+      ),
+    );
+    return ExcludeSemantics(
+      child: Container(
+        width: extent,
+        height: extent,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer,
+          shape: BoxShape.circle,
+        ),
+        child: url == null
+            ? initial
+            : Image.network(
+                url.toString(),
+                fit: BoxFit.cover,
+                cacheWidth: (extent * 3).round(),
+                errorBuilder: (_, _, _) => initial,
+              ),
+      ),
+    );
+  }
+}
+
 class _HomeIntro extends StatelessWidget {
   const _HomeIntro({
     required this.brand,
@@ -657,10 +701,11 @@ class _HomeIntro extends StatelessWidget {
     required this.status,
     required this.title,
     required this.body,
+    this.avatar,
     this.close,
   });
   final Widget brand, status;
-  final Widget? close;
+  final Widget? avatar, close;
   final String name, title, body;
 
   @override
@@ -706,6 +751,11 @@ class _HomeIntro extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if (avatar != null) ...[
+                      const SizedBox(width: 8),
+                      avatar!,
+                      if (close != null) const SizedBox(width: 4),
+                    ],
                     ?close,
                   ],
                 ),

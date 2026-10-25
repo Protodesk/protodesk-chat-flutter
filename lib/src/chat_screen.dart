@@ -140,6 +140,14 @@ class _ChatScreenState extends State<ChatMessenger>
   bool _settingUp = false;
   String? _setupStatus;
 
+  /// The verified user's display name, when there is one to greet.
+  String? get _signedInName {
+    final identity = _config?.identity;
+    return identity != null && identity.isVerified
+        ? identity.displayName
+        : null;
+  }
+
   bool get _needsSetup =>
       _config?.requiresConversationSetup == true &&
       widget.preChat.isEmpty &&
@@ -1708,7 +1716,18 @@ class _ChatScreenState extends State<ChatMessenger>
                 widget.client.connectionState,
                 _strings.status(widget.client.connectionState.name),
               ),
-              title: _config?.headerTitle ?? _text(ChatText.homeTitle),
+              // A signed-in user is greeted by the name their app vouched for.
+              title: _signedInName == null
+                  ? _config?.headerTitle ?? _text(ChatText.homeTitle)
+                  : _strings.format(ChatText.homeGreeting, {
+                      'name': _signedInName!,
+                    }),
+              avatar: _signedInName == null
+                  ? null
+                  : _UserAvatar(
+                      name: _signedInName!,
+                      url: _config?.identity.avatarUrl,
+                    ),
               body: _text(
                 _helpAvailable
                     ? ChatText.homeWelcomeHelp

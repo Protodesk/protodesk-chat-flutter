@@ -48,7 +48,10 @@ await client.dispose();
 ```
 
 The token provider must call your authenticated host backend, which mints a fresh,
-single-use Chat identity token for the same Chat App and current user. Never put
+single-use Chat identity token for the same Chat App and current user. Send the
+user's `name`, `email`, `avatarUrl` and `locale` when minting: Home then greets
+them by name with their avatar, and the pre-chat form no longer asks for a name
+or email (the server fills those from the identity and omits the fields). Never put
 Chat server secrets, platform API keys or provider credentials in the Flutter app.
 Omit `identityTokenProvider` for anonymous mode. With storage enabled,
 `identify(newProvider, identityKey: newAccountId)` changes accounts after revoking

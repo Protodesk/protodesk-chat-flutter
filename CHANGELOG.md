@@ -1,3 +1,11 @@
+## 0.1.2
+
+- Signed-in users are greeted by name on Home, with their avatar when the
+  host's backend supplied one.
+- A pre-chat form whose fields the server already filled (name and email for
+  verified sessions) is no longer shown. Needs a Protodesk backend that omits
+  identity fields for verified sessions; older servers still show the form.
+
 ## 0.1.1
 
 - Upgrade `flutter_secure_storage` to 11. Android now needs API 24, same as

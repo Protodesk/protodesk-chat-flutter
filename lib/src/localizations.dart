@@ -104,6 +104,7 @@ enum ChatText {
   newConversation,
   home,
   homeTitle,
+  homeGreeting,
   homeWelcome,
   continueConversation,
   sendUsMessage,
@@ -376,6 +377,7 @@ const _en = <ChatText, String>{
   ChatText.newConversation: 'New conversation',
   ChatText.home: 'Home',
   ChatText.homeTitle: 'Chat with us',
+  ChatText.homeGreeting: 'Hi, {name}',
   ChatText.homeWelcome:
       'We’re here to help. Ask a question and our team will reply here.',
   ChatText.continueConversation: 'Continue conversation',
@@ -549,6 +551,7 @@ const _id = <ChatText, String>{
   ChatText.newConversation: 'Percakapan baru',
   ChatText.home: 'Beranda',
   ChatText.homeTitle: 'Hubungi kami',
+  ChatText.homeGreeting: 'Hai, {name}',
   ChatText.homeWelcome: 'Kami siap membantu. Ajukan pertanyaan dan tim kami akan membalas di sini.',
   ChatText.continueConversation: 'Lanjutkan percakapan',
   ChatText.sendUsMessage: 'Kirim pesan kepada kami',

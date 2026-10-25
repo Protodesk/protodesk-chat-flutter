@@ -7,8 +7,13 @@ Map<String, dynamic> bootstrap({
   Map<String, dynamic>? preChatForm,
   bool help = true,
   String name = 'Protodesk',
+  Map<String, dynamic> identity = const {
+    'kind': 'anonymous',
+    'displayName': null,
+    'locale': 'id',
+  },
 }) => {
-  'identity': {'kind': 'anonymous', 'displayName': null, 'locale': 'id'},
+  'identity': identity,
   'configuration': {
     'publicChatAppId': appId,
     'name': name,

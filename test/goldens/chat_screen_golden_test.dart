@@ -50,6 +50,7 @@ void main() {
     ('id_dark_offline_queue', 'id', true, 1.0, const Size(390, 780), 'queue'),
     ('en_light_messages', 'en', false, 1.0, const Size(390, 780), 'messages'),
     ('en_light_home', 'en', false, 1.0, const Size(390, 780), 'home'),
+    ('en_light_home_signed_in', 'en', false, 1.0, const Size(390, 780), 'home'),
     ('id_dark_large_home', 'id', true, 2.0, const Size(390, 844), 'home'),
     ('en_light_help', 'en', false, 1.0, const Size(390, 844), 'help'),
     ('id_dark_help_article', 'id', true, 1.0, const Size(390, 844), 'article'),
@@ -80,6 +81,18 @@ void main() {
             return ChatResponse(
               200,
               bootstrap(
+                identity: variant.$1.endsWith('signed_in')
+                    ? const {
+                        'kind': 'verified',
+                        'displayName': 'Maya',
+                        'locale': 'en',
+                        'avatarUrl': null,
+                      }
+                    : const {
+                        'kind': 'anonymous',
+                        'displayName': null,
+                        'locale': 'id',
+                      },
                 appearance: {
                   'preferredColorScheme': variant.$3 ? 'dark' : 'light',
                   'logoUrl': null,

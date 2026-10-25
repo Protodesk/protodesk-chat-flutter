@@ -18,7 +18,7 @@ Protodesk.
 ## Features
 
 - Ready-made messenger with Home, Messages and Help tabs, in your brand color
-- Signed-in users or anonymous visitors
+- Signed-in users, greeted by name and never asked for their email again, or anonymous visitors
 - Realtime messages that catch up after reconnecting
 - Messages sent offline go out when the connection is back
 - Image and file attachments

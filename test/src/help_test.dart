@@ -206,6 +206,38 @@ void main() {
       expect(config.identity.locale, 'id');
     });
 
+    test('a verified identity keeps its name and a safe avatar', () {
+      ChatAppConfiguration parse(Object? avatar) =>
+          ChatAppConfiguration.fromBootstrap(
+            bootstrap(
+              identity: {
+                'kind': 'verified',
+                'displayName': ' Maya ',
+                'locale': 'en-US',
+                'avatarUrl': avatar,
+              },
+              preChatForm: const {
+                'enabled': true,
+                'intro': 'Tell us about you.',
+                'fields': [],
+              },
+            ),
+          );
+      final config = parse('https://cdn.example.test/maya.png');
+      expect(config.identity.isVerified, isTrue);
+      expect(config.identity.displayName, 'Maya');
+      expect(
+        config.identity.avatarUrl,
+        Uri.parse('https://cdn.example.test/maya.png'),
+      );
+      expect(
+        parse('http://cdn.example.test/maya.png').identity.avatarUrl,
+        isNull,
+      );
+      // The server already removed the identity fields: nothing left to ask.
+      expect(config.requiresConversationSetup, isFalse);
+    });
+
     test('invalid colour and insecure logo fall back to null', () {
       final config = ChatAppConfiguration.fromBootstrap(
         bootstrap(

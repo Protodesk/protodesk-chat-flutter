@@ -61,10 +61,13 @@ final class ChatAppConfiguration {
   /// Help is offered only when configured and content is currently available.
   bool get helpCenterAvailable => helpCenter.enabled && capabilities.helpCenter;
 
-  /// A new conversation shows the setup step first (as the web widget does):
-  /// an enabled pre-chat form, even one with only an intro, or routing choices.
+  /// A new conversation shows the setup step first (as the web widget does)
+  /// when there is something to ask: pre-chat fields or routing choices. The
+  /// server omits identity fields for verified sessions, so a form that only
+  /// collected name and email asks a signed-in user nothing.
   bool get requiresConversationSetup =>
-      preChatForm.enabled || routingChoices.isNotEmpty;
+      (preChatForm.enabled && preChatForm.fields.isNotEmpty) ||
+      routingChoices.isNotEmpty;
 }
 
 enum ChatColorScheme { system, light, dark }
@@ -232,8 +235,10 @@ final class ChatCapabilities {
 }
 
 /// Customer-safe identity summary for greetings and avatars.
+/// Who the session belongs to. A verified user's name and avatar come from
+/// the identity token the host's backend minted; an insecure avatar URL is dropped.
 final class ChatEndUser {
-  ChatEndUser._(this.kind, this.displayName, this.locale);
+  ChatEndUser._(this.kind, this.displayName, this.locale, this.avatarUrl);
   factory ChatEndUser._parse(Map json) => ChatEndUser._(
     switch (json['kind']) {
       'anonymous' => ChatIdentityKind.anonymous,
@@ -242,9 +247,14 @@ final class ChatEndUser {
     },
     _text(json['displayName']),
     _text(json['locale']),
+    safeHttpsUrl(json['avatarUrl']),
   );
   final ChatIdentityKind kind;
   final String? displayName, locale;
+  final Uri? avatarUrl;
+
+  /// A signed-in user the messenger can greet by name.
+  bool get isVerified => kind == ChatIdentityKind.verified;
 }
 
 String? _text(Object? value) =>

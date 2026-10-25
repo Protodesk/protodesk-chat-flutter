@@ -223,6 +223,51 @@ void main() {
     await client.dispose();
   });
 
+  testWidgets('a form left with no fields asks nothing', (tester) async {
+    // The server omits identity fields for verified sessions; a form that
+    // only collected name and email comes back empty and is not shown.
+    final transport = FakeTransport();
+    transport.handler = (call) async {
+      final path = call.uri.path;
+      if (path.endsWith('/bootstrap')) {
+        return ChatResponse(
+          200,
+          bootstrap(
+            help: false,
+            identity: const {
+              'kind': 'verified',
+              'displayName': 'Maya',
+              'locale': 'en',
+              'avatarUrl': null,
+            },
+            preChatForm: const {
+              'enabled': true,
+              'intro': 'Tell us a little about you.',
+              'fields': [],
+            },
+            widget: {'greeting': ''},
+          ),
+        );
+      }
+      if (path.endsWith('/conversations') && call.method == 'GET') {
+        return const ChatResponse(200, {
+          'data': [],
+          'hasMore': false,
+          'nextCursor': null,
+        });
+      }
+      return transport.respond(call);
+    };
+    final client = await pumpHome(tester, transport);
+    await tester.tap(find.text('Send us a message'));
+    await tester.pumpAndSettle();
+    expect(find.text('Before we start'), findsNothing);
+    expect(find.text('Tell us a little about you.'), findsNothing);
+    expect(creates(transport).single.body!['preChat'], isEmpty);
+    await tester.pumpWidget(const SizedBox());
+    await client.dispose();
+  });
+
   testWidgets('host-supplied setup values skip the form', (tester) async {
     final transport = setupTransport();
     final client = await pumpHome(
