@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 
 /// Local, host-owned branding. No remote styles or downloaded fonts.
 ///
-/// Mirrors the Protodesk mobile app's design system (`AppTheme`): zinc
-/// neutrals, hairline borders, a white reading plane, brand-coloured actions
-/// and neutral navigation. The brand colour (Protodesk cyan by default)
-/// replaces the app's blue accent.
+/// Colours and type sizes follow the website live chat frame.
 abstract final class ChatTheme {
   /// Protodesk's primary colour, the web widget's default `#00A5D1`.
   static const protodeskPrimary = Color(0xff00a5d1);
+
+  /// The same bundled variable face as the website, including italic and bold.
+  static const websiteFont = 'packages/protodesk_chat/Inter';
+
+  // Android Chrome resolves the widget iframe's CSS system stack to Roboto.
+  // The iframe does not inherit the website document's downloaded Inter face.
+  static String get defaultFont =>
+      defaultTargetPlatform == TargetPlatform.android ? 'Roboto' : websiteFont;
+
+  /// Muted controls in the website frame; high contrast uses the readable role.
+  static Color faint(ThemeData theme) =>
+      theme.materialTapTargetSize == MaterialTapTargetSize.padded
+      ? theme.colorScheme.onSurfaceVariant
+      : theme.brightness == Brightness.dark
+      ? const Color(0xff71717a)
+      : const Color(0xffa1a1aa);
 
   static ThemeData light({
     Color brandColor = protodeskPrimary,
@@ -38,7 +52,34 @@ abstract final class ChatTheme {
           visualDensity: VisualDensity.standard,
           tapTargetSize: MaterialTapTargetSize.padded,
         );
+    final primary = theme.colorScheme.primary;
     return theme.copyWith(
+      navigationBarTheme: theme.navigationBarTheme.copyWith(
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => theme.navigationBarTheme.labelTextStyle
+              ?.resolve(states)
+              ?.copyWith(
+                color: states.contains(WidgetState.selected)
+                    ? theme.colorScheme.onSurface
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => theme.navigationBarTheme.iconTheme
+              ?.resolve(states)
+              ?.copyWith(
+                color: states.contains(WidgetState.selected)
+                    ? primary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+        ),
+      ),
+      colorScheme: theme.colorScheme.copyWith(
+        onPrimary:
+            _contrast(primary, Colors.white) >= _contrast(primary, Colors.black)
+            ? Colors.white
+            : Colors.black,
+      ),
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       iconButtonTheme: IconButtonThemeData(
@@ -62,13 +103,11 @@ abstract final class ChatTheme {
     final dark = brightness == Brightness.dark;
     final n = dark ? _Neutrals.dark : _Neutrals.light;
     final brand = seed.withAlpha(0xff);
-    final light =
-        _contrast(brand, Colors.white) >= _contrast(brand, Colors.black);
     final action = ChatBrandColors.readable(brand, n.surface, dark).foreground;
     final scheme = ColorScheme(
       brightness: brightness,
       primary: brand,
-      onPrimary: light ? Colors.white : Colors.black,
+      onPrimary: Colors.white,
       primaryContainer: Color.alphaBlend(
         brand.withValues(alpha: dark ? 0.18 : 0.08),
         n.surface,
@@ -89,8 +128,8 @@ abstract final class ChatTheme {
           ? const Color(0xfffca5a5)
           : const Color(0xffdc2626),
       surface: n.surface,
-      onSurface: dark ? const Color(0xffe0e0e0) : _Zinc.z900,
-      onSurfaceVariant: dark ? _Zinc.z400 : _Zinc.z600,
+      onSurface: dark ? _Zinc.z100 : _Zinc.z900,
+      onSurfaceVariant: dark ? _Zinc.z400 : const Color(0xff71717a),
       surfaceContainerLowest: n.canvas,
       surfaceContainerLow: n.surfaceRaised,
       surfaceContainer: n.surfaceMuted,
@@ -109,11 +148,11 @@ abstract final class ChatTheme {
     final base = ThemeData(
       brightness: brightness,
       useMaterial3: true,
-      fontFamily: font,
+      fontFamily: font ?? defaultFont,
     ).textTheme.merge(text);
     final type = base.copyWith(
       headlineMedium: base.headlineMedium?.copyWith(
-        fontSize: 28,
+        fontSize: 26,
         height: 1.15,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.7,
@@ -131,24 +170,45 @@ abstract final class ChatTheme {
         letterSpacing: -0.15,
       ),
       titleMedium: base.titleMedium?.copyWith(
-        fontSize: 15,
-        height: 1.35,
+        fontSize: 14,
+        letterSpacing: 0,
+        height: 1.3,
         fontWeight: FontWeight.w600,
       ),
-      bodyLarge: base.bodyLarge?.copyWith(fontSize: 15, height: 1.5),
-      bodyMedium: base.bodyMedium?.copyWith(fontSize: 14, height: 1.45),
-      bodySmall: base.bodySmall?.copyWith(fontSize: 12, height: 1.4),
+      titleSmall: base.titleSmall?.copyWith(
+        fontSize: 13,
+        height: 1.35,
+        letterSpacing: 0,
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontSize: 15,
+        letterSpacing: 0,
+        height: 1.5,
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontSize: 13,
+        height: 1.48,
+        letterSpacing: 0,
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontSize: 11,
+        height: 1.45,
+        letterSpacing: 0,
+      ),
       labelLarge: base.labelLarge?.copyWith(
         inherit: false,
         fontSize: 14,
+        letterSpacing: 0,
         fontWeight: FontWeight.w600,
       ),
       labelMedium: base.labelMedium?.copyWith(
         fontSize: 12,
+        letterSpacing: 0,
         fontWeight: FontWeight.w600,
       ),
       labelSmall: base.labelSmall?.copyWith(
         fontSize: 11,
+        letterSpacing: 0,
         fontWeight: FontWeight.w500,
       ),
     );
@@ -163,9 +223,11 @@ abstract final class ChatTheme {
     const small = 8.0, medium = 12.0, large = 16.0;
     return ThemeData(
       useMaterial3: true,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.standard,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: font,
+      fontFamily: font ?? defaultFont,
       textTheme: type,
       extensions: [
         ChatBrandColors(foreground: action, borderStrong: n.borderStrong),
@@ -184,40 +246,34 @@ abstract final class ChatTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: n.surface,
-        indicatorColor: scheme.primaryContainer,
-        height: 64,
+        indicatorColor: Colors.transparent,
+        height: 68,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final on = states.contains(WidgetState.selected);
           return type.labelSmall?.copyWith(
-            color: on ? scheme.onSurface : scheme.onSurfaceVariant,
-            fontWeight: on ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 10,
+            letterSpacing: 0,
+            height: 1.1,
+            color: on
+                ? scheme.onSurface
+                : dark
+                ? const Color(0xff71717a)
+                : const Color(0xffa1a1aa),
+            fontWeight: const FontWeight(650),
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final on = states.contains(WidgetState.selected);
           return IconThemeData(
-            size: 22,
-            color: on ? scheme.onSurface : scheme.onSurfaceVariant,
+            size: 21,
+            color: on
+                ? brand
+                : dark
+                ? const Color(0xff71717a)
+                : const Color(0xffa1a1aa),
           );
         }),
-      ),
-      navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: n.surface,
-        indicatorColor: scheme.primaryContainer,
-        elevation: 0,
-        selectedIconTheme: IconThemeData(size: 22, color: scheme.onSurface),
-        unselectedIconTheme: IconThemeData(
-          size: 22,
-          color: scheme.onSurfaceVariant,
-        ),
-        selectedLabelTextStyle: type.labelSmall?.copyWith(
-          color: scheme.onSurface,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelTextStyle: type.labelSmall?.copyWith(
-          color: scheme.onSurfaceVariant,
-        ),
       ),
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 8,
@@ -248,7 +304,7 @@ abstract final class ChatTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: n.surfaceRaised,
+        fillColor: n.surface,
         alignLabelWithHint: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
@@ -268,7 +324,7 @@ abstract final class ChatTheme {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(medium)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(medium),
-          borderSide: BorderSide(color: scheme.outline),
+          borderSide: BorderSide(color: n.borderStrong),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(medium),
@@ -285,36 +341,42 @@ abstract final class ChatTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          minimumSize: const Size(48, 48),
+          minimumSize: const Size(0, 40),
           foregroundColor: action,
           textStyle: type.labelLarge,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+          minimumSize: const Size(0, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(small),
+            borderRadius: BorderRadius.circular(medium),
           ),
-          textStyle: type.labelLarge,
+          textStyle: type.labelLarge?.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+          minimumSize: const Size(0, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           foregroundColor: scheme.onSurface,
           side: BorderSide(color: n.borderStrong),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(small),
+            borderRadius: BorderRadius.circular(medium),
           ),
           textStyle: type.labelLarge,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          minimumSize: const Size(48, 48),
+          minimumSize: const Size.square(36),
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
           foregroundColor: scheme.onSurfaceVariant,
           highlightColor: brand.withValues(alpha: 0.08),
         ),
@@ -380,7 +442,6 @@ abstract final class _Zinc {
   static const z950 = Color(0xff111113);
   static const z900 = Color(0xff18181b);
   static const z800 = Color(0xff27272a);
-  static const z700 = Color(0xff3f3f46);
   static const z600 = Color(0xff52525b);
   static const z400 = Color(0xffa1a1aa);
   static const z200 = Color(0xffe4e4e7);
@@ -408,19 +469,19 @@ class _Neutrals {
     surface: Color(0xffffffff),
     surfaceMuted: _Zinc.z100,
     surfaceRaised: Color(0xfffafafa),
-    border: Color(0x14000000),
-    borderStrong: Color(0x1f000000),
+    border: _Zinc.z200,
+    borderStrong: Color(0xffd4d4d8),
     secondary: _Zinc.z600,
     warning: Color(0xffb45309),
     warningSurface: Color(0xfffffbeb),
   );
   static const dark = _Neutrals(
-    canvas: _Zinc.z950,
-    surface: Color(0xff16161a),
-    surfaceMuted: Color(0xff202024),
-    surfaceRaised: Color(0xff1b1b1f),
-    border: _Zinc.z700,
-    borderStrong: _Zinc.z600,
+    canvas: Color(0xff111217),
+    surface: Color(0xff15161b),
+    surfaceMuted: Color(0xff222329),
+    surfaceRaised: Color(0xff1a1b20),
+    border: Color(0xff2c2e35),
+    borderStrong: Color(0xff3a3c44),
     secondary: _Zinc.z400,
     warning: Color(0xfffbbf24),
     warningSurface: Color(0xff2a2112),

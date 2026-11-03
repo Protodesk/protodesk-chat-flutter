@@ -9,6 +9,7 @@ final class ChatAppConfiguration {
     required this.preChatForm,
     required this.helpCenter,
     required this.headerTitle,
+    required this.launcherOnLeft,
     required this.greeting,
     required this.links,
     required this.routingChoices,
@@ -29,7 +30,8 @@ final class ChatAppConfiguration {
         appearance: ChatAppearance._parse(configuration['appearance'] as Map),
         preChatForm: ChatPreChatForm._parse(configuration['preChatForm']),
         helpCenter: ChatHelpCenterSettings._parse(configuration['helpCenter']),
-        headerTitle: _text(widget['headerTitle']) ?? name,
+        headerTitle: _text(widget['headerTitle']) ?? 'Chat with us',
+        launcherOnLeft: widget['launcherPosition'] == 'left',
         greeting: _text(widget['greeting']) ?? '',
         links: List.unmodifiable([
           for (final link in widget['links'] as List? ?? const [])
@@ -50,6 +52,7 @@ final class ChatAppConfiguration {
   }
 
   final String name, headerTitle, greeting;
+  final bool launcherOnLeft;
   final ChatAppearance appearance;
   final ChatPreChatForm preChatForm;
   final ChatHelpCenterSettings helpCenter;

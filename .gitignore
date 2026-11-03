@@ -10,3 +10,12 @@ test/**/failures/
 doc/api/
 release-artifacts/
 __pycache__/
+
+# Editor files and machine-specific Android configuration.
+.DS_Store
+.idea/
+*.iml
+local.properties
+key.properties
+*.keystore
+*.jks

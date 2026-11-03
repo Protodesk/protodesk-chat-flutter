@@ -1,5 +1,6 @@
 import 'package:protodesk_chat/protodesk_chat.dart';
 
+import 'bootstrap.dart';
 import 'fake_transport.dart';
 
 /// A small published Help Center for widget tests and goldens.
@@ -100,7 +101,10 @@ ChatResponse? helpResponse(Call call, {bool featured = true}) {
   final path = call.uri.path;
   if (!path.contains('/help-center')) return null;
   if (path.endsWith('/help-center')) {
-    return ChatResponse(200, helpManifest(featured: featured));
+    return ChatResponse(200, {
+      ...helpManifest(featured: featured),
+      'activeLocale': call.uri.queryParameters['locale'] ?? 'en',
+    });
   }
   if (path.endsWith('/articles')) {
     final query = call.uri.queryParameters['query'];
@@ -140,4 +144,25 @@ ChatResponse? helpResponse(Call call, {bool featured = true}) {
       },
     ],
   });
+}
+
+FakeTransport helpTransport({
+  bool help = true,
+  bool unavailable = false,
+  bool featured = true,
+}) {
+  final transport = FakeTransport();
+  transport.handler = (call) async {
+    final path = call.uri.path;
+    if (path.endsWith('/bootstrap')) {
+      return ChatResponse(200, bootstrap(help: help));
+    }
+    if (path.contains('/help-center') && unavailable) {
+      return const ChatResponse(404, {
+        'error': {'code': 'chat.help_center_unavailable'},
+      });
+    }
+    return helpResponse(call, featured: featured) ?? transport.respond(call);
+  };
+  return transport;
 }

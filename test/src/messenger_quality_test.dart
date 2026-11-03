@@ -80,6 +80,7 @@ Future<ProtodeskChatClient> reach(
   View view, {
   Brightness brightness = Brightness.light,
   double scale = 1,
+  bool highContrast = false,
   TextDirection direction = TextDirection.ltr,
   Locale locale = const Locale('en'),
 }) async {
@@ -100,6 +101,7 @@ Future<ProtodeskChatClient> reach(
           textScaler: TextScaler.linear(scale),
           disableAnimations: true,
           platformBrightness: brightness,
+          highContrast: highContrast,
         ),
         child: Directionality(textDirection: direction, child: child!),
       ),
@@ -141,7 +143,12 @@ void main() {
         final semantics = tester.ensureSemantics();
         await tester.binding.setSurfaceSize(const Size(390, 844));
         addTearDown(() => tester.binding.setSurfaceSize(null));
-        final client = await reach(tester, view, brightness: brightness);
+        final client = await reach(
+          tester,
+          view,
+          brightness: brightness,
+          highContrast: true,
+        );
         await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
         await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
@@ -186,25 +193,31 @@ void main() {
     });
   }
 
-  testWidgets('phones get a bottom bar; wide layouts get a rail', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    var client = await reach(tester, View.home);
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
-    await tester.pumpWidget(const SizedBox());
-    await client.dispose();
+  testWidgets(
+    'phones and the wide floating panel keep the website bottom tabs',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      var client = await reach(tester, View.home);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
 
-    await tester.binding.setSurfaceSize(const Size(1024, 768));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    client = await reach(tester, View.home);
-    expect(find.byType(NavigationRail), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-    await tester.tap(find.text('Messages'));
-    await tester.pumpAndSettle();
-    expect(find.text('Your conversations'), findsOneWidget);
-    await tester.pumpWidget(const SizedBox());
-    await client.dispose();
-  });
+      await tester.binding.setSurfaceSize(const Size(1280, 720));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      client = await reach(tester, View.home);
+      expect(find.byType(NavigationRail), findsNothing);
+      expect(tester.getSize(find.byType(NavigationBar)).width, closeTo(360, 2));
+      // The website panel sits 20 px from the edges, 16 px above its 56 px launcher.
+      expect(
+        tester.getRect(find.byType(Scaffold)),
+        const Rect.fromLTWH(880, 20, 380, 608),
+      );
+      await tester.tap(find.text('Messages'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your conversations'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    },
+  );
 }

@@ -115,9 +115,14 @@ void main() {
       await open(tester, 'Open anonymous chat');
       expect(options!.identityTokenProvider, isNull);
       expect(options!.allowNewAnonymousIdentity, isTrue);
-      // The messenger exits through its own Close button (from openChat).
+      // Closing only hides the messenger; ending the host session signs out.
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
+      expect(t.calls.where((c) => c.method == 'DELETE'), isEmpty);
+      await open(tester, 'Open anonymous chat');
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      await open(tester, 'End session');
       expect(
         t.calls.any(
           (call) =>
@@ -164,9 +169,11 @@ void main() {
       expect(await options!.identityTokenProvider!(), 'fresh-1');
       expect(await options!.identityTokenProvider!(), 'fresh-2');
       expect(options!.allowNewAnonymousIdentity, isFalse);
-      // The messenger exits through its own Close button (from openChat).
+      // Closing only hides the messenger; ending the host session signs out.
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
+      expect(identity.closed, isFalse);
+      await open(tester, 'End session');
       expect(identity.closed, isTrue);
       final field = tester.widget<TextField>(
         find.widgetWithText(TextField, 'Host session access token'),

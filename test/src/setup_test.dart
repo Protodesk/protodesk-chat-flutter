@@ -97,6 +97,7 @@ Future<ProtodeskChatClient> pumpHome(
     MaterialApp(
       home: ChatMessenger(
         client: client,
+        initialSection: ChatMessengerSection.home,
         preChat: preChat,
         routingChoiceId: routingChoiceId,
         automaticReadReporting: false,
@@ -105,6 +106,16 @@ Future<ProtodeskChatClient> pumpHome(
   );
   await tester.pumpAndSettle();
   return client;
+}
+
+Future<void> firstMessage(WidgetTester tester) async {
+  await tester.enterText(
+    find.widgetWithText(TextField, 'Write a message…'),
+    'Can you help?',
+  );
+  await tester.pump();
+  await tester.tap(find.byTooltip('Send'));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -165,6 +176,8 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    expect(creates(transport), isEmpty);
+    await firstMessage(tester);
     expect(creates(transport).single.body, {
       'subject': '',
       'preChat': {
@@ -207,6 +220,7 @@ void main() {
         .length;
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    await firstMessage(tester);
     expect(
       find.text('The form changed. Review the latest options and continue.'),
       findsOneWidget,
@@ -263,6 +277,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Before we start'), findsNothing);
     expect(find.text('Tell us a little about you.'), findsNothing);
+    expect(creates(transport), isEmpty);
+    await firstMessage(tester);
     expect(creates(transport).single.body!['preChat'], isEmpty);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
@@ -279,6 +295,8 @@ void main() {
     await tester.tap(find.text('Send us a message'));
     await tester.pumpAndSettle();
     expect(find.text('Before we start'), findsNothing);
+    expect(creates(transport), isEmpty);
+    await firstMessage(tester);
     expect(creates(transport).single.body!['routingChoiceId'], 'sales');
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
@@ -305,6 +323,7 @@ void main() {
       await tester.tap(find.text('Buying Protodesk'));
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
+      await firstMessage(tester);
     }
 
     testWidgets('confirmed reset revokes and signs in as a new visitor', (

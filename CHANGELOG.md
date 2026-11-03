@@ -1,3 +1,9 @@
+## 0.1.3
+
+- Reopen chat and Help on the same screen, including an unsent message or an open article.
+- Add a floating chat launcher and align the messenger, conversation composer and Help Center with the website widget.
+- Refresh the integration instructions and package screenshots with native Android captures.
+
 ## 0.1.2
 
 - Signed-in users are greeted by name on Home, with their avatar when the

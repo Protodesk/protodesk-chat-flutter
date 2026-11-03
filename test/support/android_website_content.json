@@ -1,0 +1,569 @@
+{
+  "width": 411,
+  "height": 789,
+  "color": "#00a4d3",
+  "manifest": {
+    "name": "Protodesk",
+    "description": "Elevate your support.\nAutomate the routine.",
+    "defaultLocale": "en",
+    "activeLocale": "en",
+    "publicUrl": "https://help.protodesk.io",
+    "availableLocales": [
+      "en"
+    ],
+    "collections": [
+      {
+        "id": "hcc_ygwgj2h76pz57h2fgvbfaorae4",
+        "parentId": null,
+        "slug": "getting-started",
+        "name": "Getting started",
+        "description": "Set up Protodesk and confidently handle your first customer conversation.",
+        "position": 0,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+        "parentId": null,
+        "slug": "conversations",
+        "name": "Conversations",
+        "description": "Reply to customers and keep your shared inbox organized.",
+        "position": 1,
+        "articleCount": 12,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_igh42y6mnrhkekkqr2ykj6jtgq",
+        "parentId": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+        "slug": "inbox-organization",
+        "name": "Inbox & organization",
+        "description": "Find, assign, and keep track of customer conversations.",
+        "position": 0,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:12:41.729098Z"
+      },
+      {
+        "id": "hcc_p63nesbz3qprrszghmwzj2kaoy",
+        "parentId": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+        "slug": "replies-collaboration",
+        "name": "Replies & collaboration",
+        "description": "Prepare replies, share information, and collaborate with teammates.",
+        "position": 1,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:13:06.416567Z"
+      },
+      {
+        "id": "hcc_gscvazqqbjjgvo4cfw335p3fdm",
+        "parentId": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+        "slug": "conversation-lifecycle",
+        "name": "Conversation lifecycle",
+        "description": "Snooze, merge, archive, and recover conversations.",
+        "position": 2,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:13:09.040856Z"
+      },
+      {
+        "id": "hcc_mua3l36fuloky64zv6xkp46vlq",
+        "parentId": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+        "slug": "customers",
+        "name": "Customers & identities",
+        "description": "Find customer profiles and conversation history, and understand contact and identity management.",
+        "position": 3,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:14:58.118143Z"
+      },
+      {
+        "id": "hcc_svc5udzvghkj2v3jkc2d7hppoy",
+        "parentId": null,
+        "slug": "channels",
+        "name": "Channels",
+        "description": "Connect and manage your customer support channels.",
+        "position": 2,
+        "articleCount": 9,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_luhnge2czhgwp2yf6d2h4rnmsi",
+        "parentId": "hcc_svc5udzvghkj2v3jkc2d7hppoy",
+        "slug": "email",
+        "name": "Email",
+        "description": "Connect support addresses, verify delivery, and control email notifications.",
+        "position": 0,
+        "articleCount": 6,
+        "updatedAt": "2026-09-28T02:15:01.1739Z"
+      },
+      {
+        "id": "hcc_djye6azawkn2qmrzap6if2b2jq",
+        "parentId": "hcc_svc5udzvghkj2v3jkc2d7hppoy",
+        "slug": "live-chat",
+        "name": "Live Chat",
+        "description": "Configure, install, and test the Protodesk chat widget on your website.",
+        "position": 1,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:15:04.157971Z"
+      },
+      {
+        "id": "hcc_ddddom7xjiuoequhwzrmqb23ta",
+        "parentId": null,
+        "slug": "knowledge-and-ai",
+        "name": "Evelin AI",
+        "description": "Build trusted knowledge and use AI assistance with clear human oversight.",
+        "position": 3,
+        "articleCount": 13,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_5c24gxaatdguojr3wi7kolmi6u",
+        "parentId": "hcc_ddddom7xjiuoequhwzrmqb23ta",
+        "slug": "working-with-evelin",
+        "name": "Working with Evelin",
+        "description": "Draft replies, use private chats, and review answers and actions.",
+        "position": 0,
+        "articleCount": 5,
+        "updatedAt": "2026-09-28T02:13:11.628675Z"
+      },
+      {
+        "id": "hcc_v7r4mgyhendqciosoxrxqaglsq",
+        "parentId": "hcc_ddddom7xjiuoequhwzrmqb23ta",
+        "slug": "knowledge-sources",
+        "name": "Knowledge sources",
+        "description": "Prepare trusted sources and improve answer coverage.",
+        "position": 1,
+        "articleCount": 4,
+        "updatedAt": "2026-09-28T02:13:29.243981Z"
+      },
+      {
+        "id": "hcc_3nxgkeibdr6xc4u43bmj45mfxe",
+        "parentId": null,
+        "slug": "integrations",
+        "name": "Integrations",
+        "description": "Connect external tools and manage their access and workflows.",
+        "position": 4,
+        "articleCount": 4,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_n3yz3gyxvfqxxpll4v5lgpo7o4",
+        "parentId": "hcc_3nxgkeibdr6xc4u43bmj45mfxe",
+        "slug": "linear",
+        "name": "Linear",
+        "description": "Connect Linear, manage access, and work with issues and planning.",
+        "position": 0,
+        "articleCount": 4,
+        "updatedAt": "2026-09-28T02:13:31.801402Z"
+      },
+      {
+        "id": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+        "parentId": null,
+        "slug": "help-center",
+        "name": "Help Center",
+        "description": "Create, organize, publish, and distribute customer-facing documentation.",
+        "position": 5,
+        "articleCount": 9,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_imtbh47fx46ef4ecvt4t3w6omq",
+        "parentId": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+        "slug": "writing-organizing",
+        "name": "Writing & organizing",
+        "description": "Format articles and organize collections.",
+        "position": 0,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:13:34.38539Z"
+      },
+      {
+        "id": "hcc_wotevs6d3smktt7bdtmkwhfnlq",
+        "parentId": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+        "slug": "ai-authoring-review",
+        "name": "AI authoring & review",
+        "description": "Generate article proposals and review changes before publication.",
+        "position": 1,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:13:36.945794Z"
+      },
+      {
+        "id": "hcc_o53g3a5lx7jza5eo4ohdjhwncy",
+        "parentId": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+        "slug": "publishing-languages",
+        "name": "Publishing & languages",
+        "description": "Publish translations and troubleshoot article visibility.",
+        "position": 2,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:14:04.342251Z"
+      },
+      {
+        "id": "hcc_v25qpoy2y4lag2md6vk2jgwsai",
+        "parentId": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+        "slug": "appearance-distribution",
+        "name": "Appearance & distribution",
+        "description": "Customize your Help Center and manage its public address.",
+        "position": 3,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:14:06.917408Z"
+      },
+      {
+        "id": "hcc_atn5p35cya23daf4c3bm5a6udu",
+        "parentId": null,
+        "slug": "workspace-management",
+        "name": "Workspace & administration",
+        "description": "Manage teammates, permissions, teams, and conversation routing.",
+        "position": 6,
+        "articleCount": 11,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_mh6yluwfhsxiz3x5w2azuhsuqu",
+        "parentId": "hcc_atn5p35cya23daf4c3bm5a6udu",
+        "slug": "account-access",
+        "name": "Account & access",
+        "description": "Sign in, recover access, and manage personal preferences.",
+        "position": 0,
+        "articleCount": 3,
+        "updatedAt": "2026-09-28T02:14:09.41681Z"
+      },
+      {
+        "id": "hcc_y3lwitl4oz243fwvie66bme5tq",
+        "parentId": "hcc_atn5p35cya23daf4c3bm5a6udu",
+        "slug": "members-roles-teams",
+        "name": "Members, roles & teams",
+        "description": "Manage teammates, permissions, and support teams.",
+        "position": 1,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:14:11.978182Z"
+      },
+      {
+        "id": "hcc_cc7mfnsmc2kjdsavyhf4i4ck3a",
+        "parentId": "hcc_atn5p35cya23daf4c3bm5a6udu",
+        "slug": "notifications",
+        "name": "Notifications",
+        "description": "Configure operational alerts and personal email preferences.",
+        "position": 2,
+        "articleCount": 2,
+        "updatedAt": "2026-09-28T02:14:14.549306Z"
+      },
+      {
+        "id": "hcc_fueaxg42w5vvrpmh6pbkggzgom",
+        "parentId": null,
+        "slug": "billing-usage",
+        "name": "Billing & usage",
+        "description": "Understand plans, credits, and workspace usage.",
+        "position": 7,
+        "articleCount": 6,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      },
+      {
+        "id": "hcc_hfgzlgtzpshliguamafn7wmzzq",
+        "parentId": null,
+        "slug": "developers",
+        "name": "Developers",
+        "description": "Connect internal tools safely with the Protodesk Platform API.",
+        "position": 8,
+        "articleCount": 9,
+        "updatedAt": "2026-09-28T02:20:42.32903Z"
+      }
+    ],
+    "featuredArticles": [
+      {
+        "id": "hca_a6lv3ul3n7v3owa3pdk5p65veu",
+        "slug": "add-knowledge-to-protodesk",
+        "title": "Add knowledge sources for Evelin",
+        "excerpt": "Make published Help Center articles and connected public websites available for Evelin's answers.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_v7r4mgyhendqciosoxrxqaglsq",
+          "slug": "knowledge-sources",
+          "name": "Knowledge sources"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-28T02:17:22.053823Z",
+        "position": 0
+      },
+      {
+        "id": "hca_omoekus7i6kjzm57ubn4h5h6va",
+        "slug": "use-protodesk-assist",
+        "title": "Use Evelin to prepare customer replies",
+        "excerpt": "Prepare, improve, and translate customer replies with Evelin, then review the final text before sending.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_5c24gxaatdguojr3wi7kolmi6u",
+          "slug": "working-with-evelin",
+          "name": "Working with Evelin"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-28T02:17:17.776999Z",
+        "position": 1
+      },
+      {
+        "id": "hca_xvoe3yskpmmx4adrey4yi7jhbi",
+        "slug": "install-live-chat-on-your-website",
+        "title": "Install Live Chat on your website",
+        "excerpt": "Configure a Chat App, allow exact website origins, install the launcher, and troubleshoot access and current reply-delivery limits.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_djye6azawkn2qmrzap6if2b2jq",
+          "slug": "live-chat",
+          "name": "Live Chat"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T19:11:44.412266Z",
+        "position": 2
+      },
+      {
+        "id": "hca_q2u7dgtwcw2l4xvwctrvynd2yq",
+        "slug": "work-with-customer-conversations",
+        "title": "Work with customer conversations",
+        "excerpt": "Read Threads, send supported email replies, leave internal notes, and distinguish test threads from real delivery.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_uyvumf5lnqmxryebpdi5ofuczu",
+          "slug": "conversations",
+          "name": "Conversations"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T19:11:43.990391Z",
+        "position": 4
+      },
+      {
+        "id": "hca_ebbokrxubgkk327u2eiqwkth3e",
+        "slug": "set-up-your-support-email",
+        "title": "Set up your support email",
+        "excerpt": "Connect your support address, verify forwarding and sending DNS, and distinguish real email tests from test threads.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_luhnge2czhgwp2yf6d2h4rnmsi",
+          "slug": "email",
+          "name": "Email"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T19:11:43.442922Z",
+        "position": 6
+      },
+      {
+        "id": "hca_n5ibht3eruijddiktbqzyvoaja",
+        "slug": "create-and-publish-a-help-center-article",
+        "title": "Create and publish a Help Center article",
+        "excerpt": "Create a draft, preview and publish it, or submit a revision for review without changing the live answer.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_yetezevhyc4qwmhvmqclpcuhs4",
+          "slug": "help-center",
+          "name": "Help Center"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T15:37:55.711712Z",
+        "position": 2
+      }
+    ]
+  },
+  "listing": {
+    "data": [
+      {
+        "id": "hca_dwrjcbwiu63njegntciyen7svq",
+        "slug": "navigate-your-protodesk-workspace",
+        "title": "Navigate your Protodesk workspace",
+        "excerpt": "Find Threads, Evelin AI, Help Center articles, and workspace settings in the current navigation.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_ygwgj2h76pz57h2fgvbfaorae4",
+          "slug": "getting-started",
+          "name": "Getting started"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T11:16:39.524721Z",
+        "position": 0
+      },
+      {
+        "id": "hca_4xbyl4noykwjergroq22eldugi",
+        "slug": "what-is-protodesk",
+        "title": "What is Protodesk?",
+        "excerpt": "Bring customer conversations, public help articles, and Evelin AI together in one support workspace.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_ygwgj2h76pz57h2fgvbfaorae4",
+          "slug": "getting-started",
+          "name": "Getting started"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T11:16:39.232906Z",
+        "position": 1
+      },
+      {
+        "id": "hca_nd56b4mnec7zomnl3lafpt6xie",
+        "slug": "set-up-your-first-protodesk-workspace",
+        "title": "Set up your first Protodesk workspace",
+        "excerpt": "Connect support email, invite a teammate, handle a first conversation, and add public help and optional Evelin workflows.",
+        "hasCustomExcerpt": true,
+        "collection": {
+          "id": "hcc_ygwgj2h76pz57h2fgvbfaorae4",
+          "slug": "getting-started",
+          "name": "Getting started"
+        },
+        "locale": "en",
+        "updatedAt": "2026-09-27T19:12:24.774687Z",
+        "position": 2
+      }
+    ],
+    "hasMore": false,
+    "nextCursor": null
+  },
+  "article": {
+    "id": "hca_dwrjcbwiu63njegntciyen7svq",
+    "slug": "navigate-your-protodesk-workspace",
+    "title": "Navigate your Protodesk workspace",
+    "excerpt": "Find Threads, Evelin AI, Help Center articles, and workspace settings in the current navigation.",
+    "hasCustomExcerpt": true,
+    "collection": {
+      "id": "hcc_ygwgj2h76pz57h2fgvbfaorae4",
+      "slug": "getting-started",
+      "name": "Getting started"
+    },
+    "locale": "en",
+    "updatedAt": "2026-09-27T11:16:39.524721Z",
+    "position": 0,
+    "bodyMarkdown": "Use the main sidebar to move between customer conversations, Evelin, your Help Center, and workspace settings.\n\n## Main navigation\n\n- **Threads:** read messages, write replies and internal notes, and organize customer conversations.\n- **Browse:** find customer and workspace records.\n- **Evelin AI:** configure AI behavior, knowledge sources, and connected integrations.\n- **Help Center:** create, organize, and publish customer-facing articles.\n- **Settings:** manage your workspace, teammates, channels, API keys, and preferences.\n\nThe workspace switcher at the top of the sidebar changes which workspace you are working in. Check it before editing settings or content.\n\n## Evelin AI navigation\n\n- **Overview:** review setup and readiness.\n- **Style:** choose reply tone, length, formatting, and wording guidance.\n- **Knowledge sources:** manage published Help Center content and connected websites used for answers.\n- **Integrations:** connect external services such as Linear.\n- **Playground:** test a customer question privately.\n- **Automations:** manage configured workflows.\n- **Monitor:** inspect AI runs and operational issues.\n- **Usage:** review AI credits and usage.\n\nAvailable actions depend on your workspace access and whether Evelin is enabled.\n\n## Help Center navigation\n\n- **Home:** review your Help Center overview.\n- **Articles:** search and edit articles and collections.\n- **Create with AI:** connect an external AI authoring tool and prepare article proposals.\n- **Customize:** configure your Help Center's public presentation and settings.\n- **Channels:** manage how Help Center content is offered through connected channels.\n- **Needs review:** review AI-generated proposals before accepting them.\n\nWriting a public Help Center article and preparing a private customer reply are separate tasks. Always check where you are saving content and whether it is published.\n",
+    "relatedArticles": [
+      {
+        "id": "hca_4xbyl4noykwjergroq22eldugi",
+        "slug": "what-is-protodesk",
+        "title": "What is Protodesk?",
+        "excerpt": "Bring customer conversations, public help articles, and Evelin AI together in one support workspace."
+      },
+      {
+        "id": "hca_nd56b4mnec7zomnl3lafpt6xie",
+        "slug": "set-up-your-first-protodesk-workspace",
+        "title": "Set up your first Protodesk workspace",
+        "excerpt": "Connect support email, invite a teammate, handle a first conversation, and add public help and optional Evelin workflows."
+      },
+      {
+        "id": "hca_a6lv3ul3n7v3owa3pdk5p65veu",
+        "slug": "add-knowledge-to-protodesk",
+        "title": "Add knowledge sources for Evelin",
+        "excerpt": "Make published Help Center articles and connected public websites available for Evelin's answers."
+      },
+      {
+        "id": "hca_omoekus7i6kjzm57ubn4h5h6va",
+        "slug": "use-protodesk-assist",
+        "title": "Use Evelin to prepare customer replies",
+        "excerpt": "Prepare, improve, and translate customer replies with Evelin, then review the final text before sending."
+      },
+      {
+        "id": "hca_xvoe3yskpmmx4adrey4yi7jhbi",
+        "slug": "install-live-chat-on-your-website",
+        "title": "Install Live Chat on your website",
+        "excerpt": "Configure a Chat App, allow exact website origins, install the launcher, and troubleshoot access and current reply-delivery limits."
+      }
+    ]
+  },
+  "threads": [
+    {
+      "conversation": {
+        "id": "conv_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "subject": "Workspace access",
+        "status": "open",
+        "unreadCount": 0,
+        "context": {
+          "provenance": "client_unverified",
+          "screen": null,
+          "metadata": {}
+        },
+        "createdAt": "2026-10-25T09:00:00Z",
+        "updatedAt": "2026-10-25T09:00:00Z"
+      },
+      "messages": [
+        {
+          "id": "msg_aaaaaaaaaaaaaaaaaaaaaaaaad",
+          "conversationId": "conv_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "body": "Glad to help.",
+          "sender": "agent",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:03:00Z",
+          "updatedAt": "2026-10-25T09:03:00Z",
+          "attachments": []
+        },
+        {
+          "id": "msg_aaaaaaaaaaaaaaaaaaaaaaaaac",
+          "conversationId": "conv_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "body": "Thanks, I found it!",
+          "sender": "endUser",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:02:00Z",
+          "updatedAt": "2026-10-25T09:02:00Z",
+          "attachments": []
+        },
+        {
+          "id": "msg_aaaaaaaaaaaaaaaaaaaaaaaaab",
+          "conversationId": "conv_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "body": "Open Settings, then choose Members.",
+          "sender": "agent",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:01:00Z",
+          "updatedAt": "2026-10-25T09:01:00Z",
+          "attachments": []
+        },
+        {
+          "id": "msg_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "conversationId": "conv_aaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "body": "How do I invite a teammate?",
+          "sender": "endUser",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:00:00Z",
+          "updatedAt": "2026-10-25T09:00:00Z",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversation": {
+        "id": "conv_bbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "subject": "Workspace guide",
+        "status": "open",
+        "unreadCount": 0,
+        "context": {
+          "provenance": "client_unverified",
+          "screen": null,
+          "metadata": {}
+        },
+        "createdAt": "2026-10-25T09:00:00Z",
+        "updatedAt": "2026-10-25T09:00:00Z"
+      },
+      "messages": [
+        {
+          "id": "msg_bbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "conversationId": "conv_bbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "body": "Here is the guide for your workspace.",
+          "sender": "agent",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:01:00Z",
+          "updatedAt": "2026-10-25T09:01:00Z",
+          "attachments": [
+            {
+              "id": "att_cccccccccccccccccccccccccc",
+              "filename": "workspace-guide.pdf",
+              "contentType": "application/pdf",
+              "sizeBytes": 49152,
+              "status": "ready",
+              "createdAt": "2026-10-25T09:01:00Z"
+            }
+          ]
+        },
+        {
+          "id": "msg_bbbbbbbbbbbbbbbbbbbbbbbbba",
+          "conversationId": "conv_bbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "body": "Could you share the setup guide?",
+          "sender": "endUser",
+          "status": "delivered",
+          "clientMessageId": null,
+          "createdAt": "2026-10-25T09:00:00Z",
+          "updatedAt": "2026-10-25T09:00:00Z",
+          "attachments": []
+        }
+      ]
+    }
+  ]
+}

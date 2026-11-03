@@ -21,7 +21,7 @@ existing product rather than replacing the locally updated messenger.
   control when populated; clearing Help returns to topic browsing.
 - Setup and shared fields have rounded outlined boundaries and clear focus/error
   states. Existing validation and keyboard/autofill behavior remain intact.
-- Golden fixtures load regular, medium and bold Roboto from the pinned SDK so
+- Golden fixtures load the bundled variable Inter font so
   screenshot review includes the intended typographic hierarchy.
 
 ## Verification boundaries

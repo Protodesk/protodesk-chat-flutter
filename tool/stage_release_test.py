@@ -34,8 +34,10 @@ class StageTest(unittest.TestCase):
             self.fixture(root)
             (root / 'docs').mkdir()
             (root / 'docs' / 'guide.md').write_text('See docs/guide.md')
+            (root / 'docs' / 'testing.md').write_text('Repository test instructions')
             target = pathlib.Path(directory) / 'candidate'
             stage(root, target)
+            self.assertFalse((target / 'doc/guides/testing.md').exists())
             self.assertEqual((target / 'doc/guides/guide.md').read_text(),
                              'See doc/guides/guide.md')
             url = 'https://github.com/o/r/blob/main/docs/guide.md'

@@ -7,7 +7,13 @@ signed-out session, an identity change during readiness, or an unmounted context
 No delay is used. The nearest Navigator owns the Material route; pass
 `useRootNavigator: true` to select the root navigator. Back navigation leaves the
 client signed in. The host remains responsible for logout and client disposal.
-Each invocation pushes a route; disable repeated launch gestures in the host.
+Closing or backing out hides the current presentation. Reopen on the same client
+and navigator to continue editing the same draft or reading the same Help page,
+including its language, search and scroll position. Opening Help separately
+does not discard a chat draft. An explicit conversation or article link opens
+its destination. Account changes, client disposal and navigator disposal clear
+the retained UI; it is not written to disk. Repeated launches of the same
+visible presentation share its dismissal future.
 
 All ChatScreen options are forwarded, including initialConversationId, theme,
 localizations, preChat/routingChoiceId, attachment picker/viewer, and automatic
@@ -38,7 +44,7 @@ instead of relying on a past event. The stream closes on client disposal. Events
 contain no identity keys, message content, credentials, or push payloads and remain
 separate from canonical server `client.events`.
 
-ChatScreen emits opened when mounted and closed when removed or rebound to a
+ChatScreen emits opened when presented and closed when hidden, removed or rebound to a
 different client. These mean presentation lifetime, not foreground visibility,
 animation completion, or read evidence. A custom UI can call
 `final close = client.trackChatPresentation()` when mounted, then `close()` when

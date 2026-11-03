@@ -4,6 +4,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,26 @@ import '../support/help_fixtures.dart';
 
 // Fonts come from the pinned Flutter SDK, not a machine-specific absolute path.
 Future<void> loadFonts() async {
+  // The test engine has no system font fallback; load macOS’s emoji face
+  // for the same language flags the browser and native devices render.
+  final emoji = FontLoader('Apple Color Emoji')
+    ..addFont(
+      Future.value(
+        ByteData.sublistView(
+          File('/System/Library/Fonts/Apple Color Emoji.ttc').readAsBytesSync(),
+        ),
+      ),
+    );
+  await emoji.load();
+  final inter = FontLoader(ChatTheme.websiteFont);
+  for (final name in ['Inter', 'Inter-Italic']) {
+    inter.addFont(
+      Future.value(
+        ByteData.sublistView(File('assets/fonts/$name.ttf').readAsBytesSync()),
+      ),
+    );
+  }
+  await inter.load();
   final configFile = File('.dart_tool/package_config.json').absolute;
   final config = jsonDecode(configFile.readAsStringSync()) as Map;
   final flutter = (config['packages'] as List).cast<Map>().singleWhere(
@@ -43,11 +64,15 @@ Future<void> loadFonts() async {
 }
 
 void main() {
+  Future<void>? fonts;
   for (final variant in [
     ('en_light_history', 'en', false, 1.0, const Size(390, 780), 'history'),
     ('id_dark_large_history', 'id', true, 2.0, const Size(390, 844), 'history'),
     ('en_light_empty_tablet', 'en', false, 1.0, const Size(900, 700), 'empty'),
     ('id_dark_offline_queue', 'id', true, 1.0, const Size(390, 780), 'queue'),
+    ('web_home_phone', 'en', false, 1.0, const Size(451, 663), 'home'),
+    ('web_messages_empty', 'en', false, 1.0, const Size(451, 663), 'messages'),
+    ('web_new_chat', 'en', false, 1.0, const Size(451, 663), 'draft'),
     ('en_light_messages', 'en', false, 1.0, const Size(390, 780), 'messages'),
     ('en_light_home', 'en', false, 1.0, const Size(390, 780), 'home'),
     ('en_light_home_signed_in', 'en', false, 1.0, const Size(390, 780), 'home'),
@@ -59,7 +84,32 @@ void main() {
     ('id_dark_help_tablet', 'id', true, 1.0, const Size(1024, 768), 'help'),
   ]) {
     testWidgets('golden ${variant.$1}', (tester) async {
-      await tester.runAsync(loadFonts);
+      await tester.runAsync(() => fonts ??= loadFonts());
+      final fresh = variant.$1.startsWith('web_');
+      final oldShadows = debugDisableShadows;
+      debugDisableShadows = false;
+      if (fresh) {
+        // Prime the same network image key used by the widget, entirely offline.
+        final logo = await tester.runAsync(() async {
+          final codec = await ui.instantiateImageCodec(
+            File('test/support/website-logo.png').readAsBytesSync(),
+          );
+          final frame = await codec.getNextFrame();
+          codec.dispose();
+          return frame.image;
+        });
+        final provider = ResizeImage(
+          const NetworkImage('https://fixture.example.test/brand.png'),
+          width: 108,
+        );
+        final key = await provider.obtainKey(ImageConfiguration.empty);
+        PaintingBinding.instance.imageCache.putIfAbsent(
+          key,
+          () => OneFrameImageStreamCompleter(
+            Future.value(ImageInfo(image: logo!)),
+          ),
+        );
+      }
       await tester.binding.setSurfaceSize(variant.$5);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final transport = FakeTransport();
@@ -71,16 +121,22 @@ void main() {
         'help',
         'article',
         'setup',
+        'draft',
       }.contains(variant.$6);
       if (listed) {
         transport.handler = (call) async {
           final path = call.uri.path;
+          if (path.endsWith('/help-center')) {
+            return ChatResponse(200, {
+              ...helpManifest(),
+              'activeLocale': variant.$2,
+            });
+          }
           final help = helpResponse(call);
           if (help != null) return help;
           if (path.endsWith('/bootstrap')) {
-            return ChatResponse(
-              200,
-              bootstrap(
+            return ChatResponse(200, {
+              ...bootstrap(
                 identity: variant.$1.endsWith('signed_in')
                     ? const {
                         'kind': 'verified',
@@ -95,7 +151,10 @@ void main() {
                       },
                 appearance: {
                   'preferredColorScheme': variant.$3 ? 'dark' : 'light',
-                  'logoUrl': null,
+                  'logoUrl': fresh
+                      ? 'https://fixture.example.test/brand.png'
+                      : null,
+                  if (fresh) 'primaryColor': '#00A4D3',
                 },
                 help: variant.$6 != 'setup',
                 preChatForm: variant.$6 == 'setup'
@@ -142,11 +201,12 @@ void main() {
                   ],
                 },
               ),
-            );
+              if (fresh) 'unreadCount': 0,
+            });
           }
           if (path.endsWith('/conversations') &&
               call.method == 'GET' &&
-              variant.$6 == 'setup') {
+              (variant.$6 == 'setup' || fresh)) {
             return const ChatResponse(200, {
               'data': [],
               'hasMore': false,
@@ -229,8 +289,11 @@ void main() {
             key: key,
             child: ChatScreen(
               client: client,
+              onClose: () {},
               initialConversationId: listed ? null : 'conv_test',
+              attachmentPicker: () async => null,
               initialSection: switch (variant.$6) {
+                'draft' => null,
                 'home' || 'setup' => ChatMessengerSection.home,
                 'help' || 'article' => ChatMessengerSection.help,
                 _ => ChatMessengerSection.messages,
@@ -281,6 +344,7 @@ void main() {
       );
       await tester.pumpWidget(const SizedBox());
       await client.dispose();
-    });
+      debugDisableShadows = oldShadows;
+    }, skip: !Platform.isMacOS);
   }
 }

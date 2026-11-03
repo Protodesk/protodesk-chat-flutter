@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:protodesk_chat/protodesk_chat_ui.dart';
@@ -59,27 +61,149 @@ Widget host(
 );
 
 void main() {
-  testWidgets('Home greets a signed-in user by name with an avatar', (
+  testWidgets(
+    'Home uses the configured website heading for verified visitors',
+    (tester) async {
+      final transport = configured(
+        identity: {
+          'kind': 'verified',
+          'displayName': 'Maya Putri',
+          'locale': 'en',
+          'avatarUrl': null,
+        },
+      );
+      final client = await makeClient(transport);
+      await tester.pumpWidget(host(client, section: ChatMessengerSection.home));
+      await tester.pumpAndSettle();
+      expect(find.text('Chat with us'), findsOneWidget);
+      expect(find.text('WE’RE HERE TO HELP'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    },
+  );
+
+  testWidgets('opening chat keeps loading chrome until history resolves', (
     tester,
   ) async {
-    final transport = configured(
-      identity: {
-        'kind': 'verified',
-        'displayName': 'Maya Putri',
-        'locale': 'en',
-        'avatarUrl': null,
-      },
-    );
+    final history = Completer<ChatResponse>();
+    final transport = FakeTransport();
+    transport.handler = (call) async {
+      if (call.uri.path.endsWith('/bootstrap')) {
+        return ChatResponse(200, bootstrap(help: false));
+      }
+      if (call.method == 'GET' && call.uri.path.endsWith('/conversations')) {
+        return history.future;
+      }
+      return transport.respond(call);
+    };
     final client = await makeClient(transport);
-    await tester.pumpWidget(host(client, section: ChatMessengerSection.home));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChatMessenger(client: client, onClose: () {}),
+      ),
+    );
+    await tester.pump();
+    expect(find.bySemanticsLabel('Loading chat…'), findsOneWidget);
+    expect(find.text('Messages'), findsNothing);
+    expect(find.byTooltip('Close'), findsOneWidget);
+    history.complete(
+      const ChatResponse(200, {
+        'data': [],
+        'hasMore': false,
+        'nextCursor': null,
+      }),
+    );
     await tester.pumpAndSettle();
-    expect(find.text('Hi, Maya Putri'), findsOneWidget);
-    expect(find.text('Chat with us'), findsNothing);
-    // No image: the avatar falls back to the user's initial.
-    expect(find.text('M'), findsOneWidget);
+    expect(find.byTooltip('Send'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
+
+  for (final platform in [TargetPlatform.macOS, TargetPlatform.android]) {
+    testWidgets('new draft keyboard focus on ${platform.name}', (tester) async {
+      final client = await makeClient(configured());
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChatMessenger(
+            client: client,
+            initialSection: ChatMessengerSection.messages,
+            theme: ChatTheme.light().copyWith(platform: platform),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start a conversation'));
+      await tester.pumpAndSettle();
+      final field = tester.widget<TextField>(
+        find.widgetWithText(TextField, 'Write a message…'),
+      );
+      expect(field.focusNode!.hasFocus, platform == TargetPlatform.macOS);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    });
+  }
+
+  testWidgets(
+    'a cancelled file picker leaves a new chat local, and a failed first send can retry',
+    (tester) async {
+      final transport = FakeTransport();
+      final attempts = <Call>[];
+      transport.handler = (call) async {
+        if (call.uri.path.endsWith('/bootstrap')) {
+          return ChatResponse(200, bootstrap(help: false));
+        }
+        if (call.uri.path.endsWith('/conversations')) {
+          if (call.method == 'GET') {
+            return const ChatResponse(200, {
+              'data': [],
+              'hasMore': false,
+              'nextCursor': null,
+            });
+          }
+          attempts.add(call);
+          if (attempts.length == 1) {
+            return const ChatResponse(503, {
+              'error': {'code': 'chat.dependency_unavailable'},
+            });
+          }
+        }
+        return transport.respond(call);
+      };
+      final client = await makeClient(transport);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChatMessenger(
+            client: client,
+            attachmentPicker: () async => null,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Attach file'));
+      await tester.pumpAndSettle();
+      expect(attempts, isEmpty);
+      final input = find.widgetWithText(TextField, 'Write a message…');
+      await tester.enterText(input, 'My first message');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      expect(attempts, hasLength(1));
+      expect(
+        tester.widget<TextField>(input).controller!.text,
+        'My first message',
+      );
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      expect(attempts, hasLength(2));
+      final key = attempts.first.headers.entries.singleWhere(
+        (entry) => entry.key.toLowerCase() == 'idempotency-key',
+      );
+      expect(attempts.last.headers[key.key], key.value);
+      expect(tester.widget<TextField>(input).controller!.text, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    },
+  );
 
   testWidgets('Messages section lists cards and starts conversations', (
     tester,
@@ -148,8 +272,7 @@ void main() {
     expect(find.text('Connecting…'), findsOneWidget);
     transport.sockets.single.emit('realtime.ready', {'cursor': 'c1'});
     await tester.pumpAndSettle();
-    // A healthy connection needs no status line in a conversation.
-    expect(find.text('Connected'), findsNothing);
+    expect(find.text('Connected'), findsOneWidget);
     expect(find.text('Powered by Protodesk'), findsOneWidget);
     await tester.tap(find.byTooltip('Close'));
     expect(closed, 1);
@@ -165,7 +288,9 @@ void main() {
   ) async {
     final transport = configured();
     final client = await makeClient(transport);
-    await tester.pumpWidget(host(client, initial: 'conv_test'));
+    await tester.pumpWidget(host(client));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start a conversation'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Hi! How can we help you?'), findsNothing);
@@ -176,10 +301,9 @@ void main() {
     await client.dispose();
 
     final reduced = await makeClient(configured());
-    await tester.pumpWidget(
-      host(reduced, initial: 'conv_test', reduceMotion: true),
-    );
-    await tester.pump();
+    await tester.pumpWidget(host(reduced, reduceMotion: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start a conversation'));
     await tester.pump();
     expect(find.text('Hi! How can we help you?'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
@@ -207,12 +331,12 @@ void main() {
     final client = await makeClient(transport);
     await tester.pumpWidget(host(client, initial: 'conv_test'));
     await tester.pumpAndSettle();
-    expect(find.text('Automated notice'), findsOneWidget);
+    expect(find.text('AUTOMATED NOTICE'), findsOneWidget);
     expect(
       find.text('Message received. Replies will appear here.'),
       findsOneWidget,
     );
-    final screen = tester.getRect(find.byType(ChatMessenger));
+    final screen = tester.getRect(find.byType(Scaffold).last);
     final bubble = tester.getRect(find.text('Where is my order?'));
     expect(bubble.center.dx, greaterThan(screen.center.dx));
 
@@ -250,14 +374,8 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
-    final send = tester.widget<IconButton>(
-      find.ancestor(
-        of: find.byTooltip('Send'),
-        matching: find.byType(IconButton),
-      ),
-    );
-    expect(send.onPressed, isNull);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byTooltip('Send'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -305,6 +423,10 @@ void main() {
     );
     final opened = client.openChat(launcher, automaticReadReporting: false);
     await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('message-history-conv_test')),
+      findsOneWidget,
+    );
     expect(find.byType(ChatMessenger), findsOneWidget);
     await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
@@ -351,9 +473,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Chat with us'), findsOneWidget);
       expect(
-        find.text(
-          'We’re here to help. Ask a question and our team will reply here.',
-        ),
+        find.text('Ask a question and our team will reply here.'),
         findsOneWidget,
       );
       final active = find.byKey(const ValueKey('conv_test'));
@@ -383,7 +503,7 @@ void main() {
       expect(find.byTooltip('Send'), findsOneWidget);
       await tester.tap(find.byTooltip('Conversations'));
       await tester.pumpAndSettle();
-      expect(find.text('Chat with us'), findsOneWidget);
+      expect(find.text('Your conversations'), findsOneWidget);
       expect(find.byType(NavigationBar), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await client.dispose();
@@ -404,7 +524,7 @@ void main() {
         transport.calls.where(
           (c) => c.method == 'POST' && c.uri.path.endsWith('/conversations'),
         ),
-        hasLength(1),
+        isEmpty,
       );
       expect(find.byTooltip('Send'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
@@ -428,7 +548,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Helpful links'), findsOneWidget);
+      await tester.ensureVisible(find.text('Status'));
       // Only the HTTPS link without credentials survives configuration parsing.
       expect(find.text('Unsafe'), findsNothing);
       await tester.tap(find.text('Status'));

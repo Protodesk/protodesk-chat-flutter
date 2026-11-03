@@ -10,7 +10,14 @@ void main() {
     (tester) async {
       final transport = FakeTransport();
       final client = await makeClient(transport);
-      await tester.pumpWidget(MaterialApp(home: ChatScreen(client: client)));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
+            client: client,
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('conv_test')));
       await tester.pumpAndSettle();

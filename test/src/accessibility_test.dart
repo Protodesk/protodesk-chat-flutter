@@ -29,10 +29,12 @@ Widget host(
       viewInsets: EdgeInsets.only(bottom: keyboard),
       disableAnimations: reduceMotion,
       supportsAnnounce: announce,
+      highContrast: true,
     ),
     child: child!,
   ),
   home: ChatScreen(
+    initialSection: ChatMessengerSection.messages,
     client: c,
     initialConversationId: initial ? 'conv_test' : null,
     attachmentPicker: () async => null,
@@ -175,14 +177,14 @@ void main() {
           );
     },
   );
-  test('default theme text and control role pairs meet AA contrast', () {
+  test('accessible theme text and control role pairs meet AA contrast', () {
     double ratio(Color a, Color b) {
       final x = a.computeLuminance(), y = b.computeLuminance();
       return (math.max(x, y) + .05) / (math.min(x, y) + .05);
     }
 
     for (final theme in [ChatTheme.light(), ChatTheme.dark()]) {
-      final c = theme.colorScheme;
+      final c = ChatTheme.accessible(theme).colorScheme;
       for (final pair in [
         [c.onSurface, c.surface],
         [c.onPrimary, c.primary],

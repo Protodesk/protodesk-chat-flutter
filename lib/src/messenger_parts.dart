@@ -4,10 +4,9 @@ part of 'chat_screen.dart';
 // widget (protodesk-web/src/widget) using Material colour roles, so host and
 // Chat App brands stay legible in light and dark.
 
-/// Logo when the Chat App has an HTTPS logo, otherwise its initial.
+/// Configured HTTPS logo, with the website's P mark as its fallback.
 class _BrandMark extends StatelessWidget {
-  const _BrandMark({required this.name, this.logoUrl, this.size = 36});
-  final String name;
+  const _BrandMark({this.logoUrl, this.size = 36});
   final Uri? logoUrl;
   final double size;
 
@@ -18,9 +17,9 @@ class _BrandMark extends StatelessWidget {
     final extent = scaled.scale(size);
     final initial = Center(
       child: Text(
-        name.isEmpty ? 'P' : name.characters.first.toUpperCase(),
+        'P',
         style: TextStyle(
-          color: scheme.onPrimary,
+          color: scheme.onPrimaryContainer,
           fontWeight: FontWeight.w700,
           fontSize: extent * 0.45,
           height: 1,
@@ -34,8 +33,13 @@ class _BrandMark extends StatelessWidget {
         height: extent,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: scheme.primary,
-          borderRadius: BorderRadius.circular(extent * 0.28),
+          color: logoUrl == null ? scheme.primaryContainer : Colors.transparent,
+          border: Border.all(
+            color: logoUrl == null
+                ? Color.lerp(scheme.surface, scheme.primary, .18)!
+                : Colors.transparent,
+          ),
+          borderRadius: BorderRadius.circular(extent * 0.30),
         ),
         child: logoUrl == null
             ? initial
@@ -76,16 +80,11 @@ class _MessengerHeader extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 64),
         child: Padding(
-          padding: EdgeInsetsDirectional.only(
-            start: leading == null ? 16 : 4,
-            end: 4,
-            top: 6,
-            bottom: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 12),
           child: Row(
             children: [
-              ?leading,
-              if (brand != null) ...[brand!, const SizedBox(width: 10)],
+              if (leading != null) ...[leading!, const SizedBox(width: 8)],
+              if (brand != null) ...[brand!, const SizedBox(width: 8)],
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -115,6 +114,115 @@ class _MessengerHeader extends StatelessWidget {
   }
 }
 
+/// The header and composer stay in place while the first conversation loads.
+class _OpeningChat extends StatelessWidget {
+  const _OpeningChat({required this.label, this.close});
+  final String label;
+  final Widget? close;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget block(double width, double height, double radius) => Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 11),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 44),
+                block(36, 36, 12),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      block(152, 9, 5),
+                      const SizedBox(height: 7),
+                      block(104, 7, 4),
+                    ],
+                  ),
+                ),
+                ?close,
+              ],
+            ),
+          ),
+          Expanded(
+            child: Semantics(
+              label: label,
+              liveRegion: true,
+              child: Align(
+                alignment: AlignmentDirectional.topStart,
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(18, 22, 18, 0),
+                  width: 58,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainer,
+                    borderRadius: const BorderRadiusDirectional.only(
+                      topStart: Radius.circular(6),
+                      topEnd: Radius.circular(16),
+                      bottomStart: Radius.circular(16),
+                      bottomEnd: Radius.circular(16),
+                    ),
+                  ),
+                  child: const _TypingDots(),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 4, 18, 10),
+            child: Column(
+              children: [
+                Container(
+                  height: 48,
+                  padding: const EdgeInsetsDirectional.fromSTEB(12, 7, 7, 7),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: scheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Row(
+                    children: [
+                      block(20, 20, 7),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: block(154, 9, 5),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      block(34, 34, 10),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 9),
+                block(108, 7, 4),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Connection status with a coloured dot; the text is a live region.
 class _ConnectionStatus extends StatelessWidget {
   const _ConnectionStatus(this.state, this.label);
@@ -126,9 +234,9 @@ class _ConnectionStatus extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final dot = switch (state) {
-      ChatConnectionState.connected => const Color(0xff16a34a),
-      ChatConnectionState.disconnected => scheme.error,
-      _ => scheme.outline,
+      ChatConnectionState.connected => const Color(0xff4ade80),
+      ChatConnectionState.disconnected => const Color(0xffa1a1aa),
+      _ => const Color(0xfffbbf24),
     };
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -136,7 +244,13 @@ class _ConnectionStatus extends StatelessWidget {
         Container(
           width: 7,
           height: 7,
-          decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: dot,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: dot.withValues(alpha: .2), spreadRadius: 2),
+            ],
+          ),
         ),
         const SizedBox(width: 6),
         Flexible(
@@ -144,6 +258,8 @@ class _ConnectionStatus extends StatelessWidget {
             label,
             style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
+              fontSize: 12,
+              height: 1.3,
             ),
           ),
         ),
@@ -160,20 +276,24 @@ class _SectionHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(0, 24, 0, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: const FontWeight(750),
+              height: 1.15,
+              letterSpacing: -.45,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 5),
           Text(
             body,
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 12,
+              height: 1.5,
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -192,10 +312,12 @@ class _ConversationCard extends StatelessWidget {
     required this.brand,
     required this.onTap,
     this.unread,
+    this.recent = false,
     this.semanticsLabel,
   });
   final String title, subtitle;
   final Widget brand;
+  final bool recent;
   final String? unread, semanticsLabel;
   final VoidCallback onTap;
 
@@ -203,69 +325,61 @@ class _ConversationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Material(
-        color: unread == null ? scheme.surface : scheme.primaryContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Semantics(
-            button: true,
-            label: semanticsLabel,
-            excludeSemantics: semanticsLabel != null,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 64),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    brand,
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: unread == null
-                                  ? FontWeight.w500
-                                  : FontWeight.w700,
-                            ),
+    return Material(
+      color: Colors.transparent,
+      shape: recent
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(color: scheme.outlineVariant),
+            )
+          : Border(bottom: BorderSide(color: scheme.outlineVariant)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Semantics(
+          button: true,
+          label: semanticsLabel,
+          excludeSemantics: semanticsLabel != null,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 68),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: recent ? 12 : 4,
+                vertical: 12,
+              ),
+              child: Row(
+                children: [
+                  brand,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: unread == null
+                                ? FontWeight.w500
+                                : FontWeight.w700,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    if (unread != null) ...[
-                      const SizedBox(width: 8),
-                      _CountBadge(unread!),
-                    ],
-                    const SizedBox(width: 4),
-                    Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_left_rounded
-                          : Icons.chevron_right_rounded,
-                      color: scheme.onSurfaceVariant,
-                    ),
+                  ),
+                  if (unread != null) ...[
+                    const SizedBox(width: 8),
+                    _CountBadge(unread!),
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -323,32 +437,25 @@ class _MessageBubble extends StatelessWidget {
     final scheme = theme.colorScheme;
     final customer = kind == _BubbleKind.customer;
     final system = kind == _BubbleKind.system;
-    final foreground = system ? scheme.onSurfaceVariant : scheme.onSurface;
-    // The mobile app's bubbles: the sender's own messages carry a light brand
-    // tint and border; the other side sits on a raised neutral surface.
-    final dark = theme.brightness == Brightness.dark;
+    final foreground = customer
+        ? scheme.onPrimary
+        : system
+        ? scheme.onSurfaceVariant
+        : scheme.onSurface;
     final bubble = Container(
       padding: system
-          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
-          : const EdgeInsets.all(12),
+          ? const EdgeInsets.fromLTRB(13, 11, 13, 8)
+          : const EdgeInsets.fromLTRB(14, 12, 14, 9),
       decoration: system
-          ? BoxDecoration(
-              color: scheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(999),
-            )
+          ? null
           : BoxDecoration(
-              color: customer
-                  ? Color.alphaBlend(
-                      scheme.primary.withValues(alpha: dark ? 0.14 : 0.10),
-                      scheme.surface,
-                    )
-                  : scheme.surfaceContainerLow,
-              border: Border.all(
-                color: customer
-                    ? scheme.primary.withValues(alpha: 0.20)
-                    : scheme.outlineVariant,
+              color: customer ? scheme.primary : scheme.surfaceContainer,
+              borderRadius: BorderRadiusDirectional.only(
+                topStart: Radius.circular(customer ? 16 : 6),
+                topEnd: Radius.circular(customer ? 6 : 16),
+                bottomStart: const Radius.circular(16),
+                bottomEnd: const Radius.circular(16),
               ),
-              borderRadius: BorderRadius.circular(12),
             ),
       child: DefaultTextStyle.merge(
         style: TextStyle(color: foreground),
@@ -362,8 +469,12 @@ class _MessageBubble extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  label!,
+                  label!.toUpperCase(),
+                  semanticsLabel: label,
                   style: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 10,
+                    letterSpacing: .9,
+                    fontWeight: FontWeight.w700,
                     color: foreground,
                   ),
                 ),
@@ -371,11 +482,25 @@ class _MessageBubble extends StatelessWidget {
             ?child,
             if (meta.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(
-                meta,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w400,
+              Container(
+                alignment: AlignmentDirectional.centerEnd,
+                constraints: const BoxConstraints(minHeight: 14),
+                child: Text(
+                  meta,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: customer
+                        ? foreground.withValues(
+                            alpha:
+                                theme.materialTapTargetSize ==
+                                    MaterialTapTargetSize.padded
+                                ? 1
+                                : .68,
+                          )
+                        : ChatTheme.faint(theme),
+                    fontSize: 9,
+                    letterSpacing: 0,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ],
@@ -384,7 +509,7 @@ class _MessageBubble extends StatelessWidget {
       ),
     );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       child: Column(
         crossAxisAlignment: system
             ? CrossAxisAlignment.center
@@ -397,10 +522,10 @@ class _MessageBubble extends StatelessWidget {
               constraints: BoxConstraints(
                 maxWidth: (constraints.maxWidth * (system ? 0.9 : 0.82)).clamp(
                   0,
-                  560,
+                  640,
                 ),
               ),
-              child: bubble,
+              child: meta.isEmpty ? bubble : IntrinsicWidth(child: bubble),
             ),
           ),
           ?footer,
@@ -551,18 +676,24 @@ class _PoweredBy extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final style = theme.textTheme.labelSmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
+      fontSize: 10,
+      height: 1.18,
+      letterSpacing: 0,
+      color: ChatTheme.faint(theme),
       fontWeight: FontWeight.w400,
     );
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Text.rich(
         TextSpan(
           text: '$prefix ',
           children: [
             TextSpan(
               text: 'Protodesk',
-              style: style?.copyWith(fontWeight: FontWeight.w700),
+              style: style?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -616,7 +747,7 @@ class _GreetingBubbleState extends State<_GreetingBubble> {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Padding(
-        padding: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.only(top: 16),
         child: AnimatedSwitcher(
           duration: MediaQuery.disableAnimationsOf(context)
               ? Duration.zero
@@ -632,7 +763,19 @@ class _GreetingBubbleState extends State<_GreetingBubble> {
               : _MessageBubble(
                   key: const ValueKey('greeting'),
                   kind: _BubbleKind.agent,
-                  meta: widget.meta,
+                  meta: '',
+                  footer: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 2, top: 6),
+                    child: Text(
+                      widget.meta,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 10,
+                        letterSpacing: 0,
+                        fontWeight: FontWeight.w400,
+                        color: ChatTheme.faint(theme),
+                      ),
+                    ),
+                  ),
                   child: Text(
                     widget.text,
                     semanticsLabel: widget.semanticsLabel,
@@ -648,50 +791,38 @@ class _GreetingBubbleState extends State<_GreetingBubble> {
   }
 }
 
-/// Home's branded intro: identity row, heading and supporting copy on a soft
-/// brand tint, with room at the bottom for the overlapping contact card.
-/// A signed-in user's avatar, or their initial when there is no image.
-class _UserAvatar extends StatelessWidget {
-  const _UserAvatar({required this.name, this.url});
-  final String name;
-  final Uri? url;
+/// Background painted in the scrollable Home content, as in the website frame.
+class _HomeBackdrop extends CustomPainter {
+  const _HomeBackdrop(this.brand, this.canvas);
+  final Color brand, canvas;
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    const extent = 32.0;
-    final initial = Center(
-      child: Text(
-        name.characters.first.toUpperCase(),
-        style: TextStyle(
-          color: scheme.onPrimaryContainer,
-          fontWeight: FontWeight.w700,
-          fontSize: 14,
-          height: 1,
-        ),
-        textScaler: TextScaler.noScaling,
-      ),
+  void paint(Canvas c, Size size) {
+    final rect = Offset.zero & Size(size.width, 340);
+    c.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color.lerp(canvas, brand, .04)!, canvas],
+        ).createShader(rect),
     );
-    return ExcludeSemantics(
-      child: Container(
-        width: extent,
-        height: extent,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: scheme.primaryContainer,
-          shape: BoxShape.circle,
-        ),
-        child: url == null
-            ? initial
-            : Image.network(
-                url.toString(),
-                fit: BoxFit.cover,
-                cacheWidth: (extent * 3).round(),
-                errorBuilder: (_, _, _) => initial,
-              ),
-      ),
+    c.drawCircle(
+      Offset(size.width * .04, 52),
+      54,
+      Paint()..color = brand.withValues(alpha: .13),
+    );
+    c.drawCircle(
+      Offset(size.width * 1.08, 212),
+      118,
+      Paint()..color = brand.withValues(alpha: .09),
     );
   }
+
+  @override
+  bool shouldRepaint(_HomeBackdrop old) =>
+      brand != old.brand || canvas != old.canvas;
 }
 
 class _HomeIntro extends StatelessWidget {
@@ -701,40 +832,38 @@ class _HomeIntro extends StatelessWidget {
     required this.status,
     required this.title,
     required this.body,
-    this.avatar,
+    required this.eyebrow,
     this.close,
   });
   final Widget brand, status;
-  final Widget? avatar, close;
+  final Widget? close;
+  final String eyebrow;
   final String name, title, body;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final tint = Color.alphaBlend(
-      scheme.primary.withValues(alpha: 0.07),
-      scheme.surface,
-    );
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: tint,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.primary.withValues(alpha: 0.20)),
+        color: scheme.surface.withValues(alpha: .28),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Color.lerp(scheme.outlineVariant, scheme.primary, .28)!,
+        ),
       ),
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 12, 52),
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 42),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     brand,
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 9),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,19 +873,38 @@ class _HomeIntro extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
+                              fontSize: 13.5,
+                              height: 1.25,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
+                          const SizedBox(height: 2),
                           status,
                         ],
                       ),
                     ),
-                    if (avatar != null) ...[
-                      const SizedBox(width: 8),
-                      avatar!,
-                      if (close != null) const SizedBox(width: 4),
-                    ],
-                    ?close,
+                    if (close != null)
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: scheme.surface.withValues(alpha: .55),
+                              border: Border.all(color: scheme.outlineVariant),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            child: close!,
+                          ),
+                        ],
+                      ),
                   ],
                 ),
                 const SizedBox(height: 22),
@@ -765,22 +913,54 @@ class _HomeIntro extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: scheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
+                          child: Text(
+                            eyebrow.toUpperCase(),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: ChatBrandColors.readable(
+                                scheme.primary,
+                                scheme.primaryContainer,
+                                theme.brightness == Brightness.dark,
+                              ).foreground,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.26,
+                              fontSize: 9,
+                              height: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Semantics(
                         header: true,
                         child: Text(
                           title,
                           style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            height: 1.1,
+                            fontWeight: const FontWeight(750),
+                            height: 1.08,
+                            letterSpacing: -.91,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        body,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                          height: 1.4,
+                      const SizedBox(height: 10),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 285),
+                        child: Text(
+                          body,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.secondary,
+                            fontSize: 12.5,
+                            height: 1.55,
+                          ),
                         ),
                       ),
                     ],
@@ -813,14 +993,24 @@ class _HomeContactCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    // Flat, hairline-bordered card, as in the mobile app.
     return DecoratedBox(
-      decoration: const BoxDecoration(),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: .10),
+            blurRadius: 34,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
       child: Material(
         color: scheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outlineVariant),
+          side: BorderSide(
+            color: Color.lerp(scheme.outlineVariant, scheme.primary, .16)!,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -830,7 +1020,7 @@ class _HomeContactCard extends StatelessWidget {
             label: semanticsLabel,
             excludeSemantics: semanticsLabel != null,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 72),
+              constraints: const BoxConstraints(minHeight: 74),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -843,10 +1033,13 @@ class _HomeContactCard extends StatelessWidget {
                       height: 42,
                       decoration: BoxDecoration(
                         color: scheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: scheme.primary.withValues(alpha: .14),
+                        ),
+                        borderRadius: BorderRadius.circular(13),
                       ),
-                      child: Icon(
-                        Icons.chat_bubble_outline_rounded,
+                      child: ChatWidgetIcon(
+                        ChatGlyph.message,
                         size: 20,
                         color: scheme.onPrimaryContainer,
                       ),
@@ -879,11 +1072,18 @@ class _HomeContactCard extends StatelessWidget {
                       _CountBadge(unread!),
                     ],
                     const SizedBox(width: 4),
-                    Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_left_rounded
-                          : Icons.chevron_right_rounded,
-                      color: scheme.onSurfaceVariant,
+                    Container(
+                      width: 27,
+                      height: 27,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 19,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -905,13 +1105,15 @@ class _HomeSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 6),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 9),
       child: Semantics(
         header: true,
         child: Text(
           text,
           style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
+            fontWeight: const FontWeight(750),
+            fontSize: 12,
+            height: 1.2,
           ),
         ),
       ),
@@ -934,41 +1136,44 @@ class _HomeLinks extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Material(
-        color: scheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            for (var i = 0; i < links.length; i++) ...[
-              if (i > 0) Divider(height: 1, color: scheme.outlineVariant),
-              Semantics(
+    return Column(
+      children: [
+        for (final link in links)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+            child: Material(
+              color: scheme.surface,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(11),
+                side: BorderSide(color: scheme.outlineVariant),
+              ),
+              child: Semantics(
                 link: true,
                 hint: hint,
                 child: InkWell(
-                  onTap: () => onOpen(links[i].url),
+                  onTap: () => onOpen(link.url),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 52),
+                    constraints: BoxConstraints(
+                      minHeight:
+                          theme.materialTapTargetSize ==
+                              MaterialTapTargetSize.padded
+                          ? 48
+                          : 42,
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              links[i].label,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              link.label,
+                              style: theme.textTheme.labelMedium,
                             ),
                           ),
                           Icon(
-                            Icons.open_in_new_rounded,
-                            size: 18,
+                            Icons.open_in_new,
+                            size: 14,
                             color: scheme.onSurfaceVariant,
                           ),
                         ],
@@ -977,9 +1182,56 @@ class _HomeLinks extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Filled actions from the pre-chat form and Messages list.
+class _StartButton extends StatelessWidget {
+  const _StartButton({
+    required this.label,
+    required this.onPressed,
+    this.setup = false,
+  });
+  final String label;
+  final VoidCallback? onPressed;
+  final bool setup;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final radius = BorderRadius.circular(setup ? 11 : 12);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          if (onPressed != null)
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: .16),
+              offset: Offset(0, setup ? 8 : 7),
+              blurRadius: setup ? 20 : 18,
+            ),
+        ],
+      ),
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          minimumSize: Size.fromHeight(setup ? 45 : 44),
+          padding: EdgeInsets.symmetric(
+            horizontal: setup ? 15 : 16,
+            vertical: 10,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
+          textStyle: theme.textTheme.labelLarge?.copyWith(
+            fontSize: 13,
+            letterSpacing: 0,
+            fontWeight: setup ? const FontWeight(750) : FontWeight.w700,
+          ),
         ),
+        child: Text(label),
       ),
     );
   }

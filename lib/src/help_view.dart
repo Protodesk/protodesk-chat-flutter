@@ -25,7 +25,7 @@ final class _HelpArticleRoute extends _HelpRoute {
   final Future<ChatHelpArticle> article;
 }
 
-const _rtlLanguages = {'ar', 'fa', 'he', 'ur'};
+const _rtlLanguages = {'ar', 'fa', 'he', 'ku', 'ps', 'ur'};
 const _languageNames = {
   'en': 'English',
   'id': 'Bahasa Indonesia',
@@ -46,6 +46,44 @@ const _languageNames = {
   'hi': 'हिन्दी',
 };
 
+const _languageFlags = {
+  'ar': '🇸🇦',
+  'cs': '🇨🇿',
+  'de': '🇩🇪',
+  'en': '🇬🇧',
+  'es': '🇪🇸',
+  'fa': '🇮🇷',
+  'fr': '🇫🇷',
+  'he': '🇮🇱',
+  'hi': '🇮🇳',
+  'hu': '🇭🇺',
+  'id': '🇮🇩',
+  'it': '🇮🇹',
+  'ja': '🇯🇵',
+  'ko': '🇰🇷',
+  'ms': '🇲🇾',
+  'nl': '🇳🇱',
+  'pl': '🇵🇱',
+  'pt': '🇧🇷',
+  'ro': '🇷🇴',
+  'ru': '🇷🇺',
+  'sv': '🇸🇪',
+  'th': '🇹🇭',
+  'tr': '🇹🇷',
+  'uk': '🇺🇦',
+  'vi': '🇻🇳',
+  'zh': '🇨🇳',
+};
+Widget _languageFlag(String locale) => ExcludeSemantics(
+  child: Text(
+    _languageFlags[locale.split('-').first.toLowerCase()] ?? '🌐',
+    style: const TextStyle(
+      fontSize: 18,
+      fontFamilyFallback: ['Apple Color Emoji', 'Noto Color Emoji'],
+    ),
+  ),
+);
+
 String _languageName(String locale) =>
     _languageNames[locale.split('-').first.toLowerCase()] ??
     locale.toUpperCase();
@@ -60,6 +98,8 @@ class _HelpSection extends StatefulWidget {
     this.initialRoute = const _HelpRoot(),
     this.onOpenLink,
     this.close,
+    required this.expanded,
+    this.onExpand,
   });
   final ChatHelpController controller;
   final ChatLocalizations strings;
@@ -68,6 +108,8 @@ class _HelpSection extends StatefulWidget {
   final _HelpRoute initialRoute;
   final Future<void> Function(Uri url)? onOpenLink;
   final Widget? close;
+  final bool expanded;
+  final ValueChanged<bool>? onExpand;
 
   @override
   State<_HelpSection> createState() => _HelpSectionState();
@@ -76,7 +118,7 @@ class _HelpSection extends StatefulWidget {
 class _HelpSectionState extends State<_HelpSection> {
   // A directly opened article sits above the Help home so Back stays in Help.
   late final List<_HelpRoute> _stack = [
-    if (widget.initialRoute is _HelpArticleRoute) const _HelpRoot(),
+    if (widget.initialRoute is! _HelpRoot) const _HelpRoot(),
     widget.initialRoute,
   ];
   late final _search = TextEditingController(
@@ -106,6 +148,9 @@ class _HelpSectionState extends State<_HelpSection> {
         final switched = _locale != null;
         _locale = _help.locale;
         if (switched) {
+          _debounce?.cancel();
+          _search.clear();
+          _query = '';
           _stack
             ..clear()
             ..add(const _HelpRoot());
@@ -116,6 +161,7 @@ class _HelpSectionState extends State<_HelpSection> {
     unawaited(_help.load());
     final route = widget.initialRoute;
     if (route is _HelpListingRoute) _startListing(route);
+    if (_query.length >= 2) _onQuery(_query);
   }
 
   @override
@@ -145,23 +191,23 @@ class _HelpSectionState extends State<_HelpSection> {
       _push(_HelpArticleRoute(id, slug, _help.article(id)));
 
   void _pop() {
-    if (_stack.length > 1) setState(() => _stack.removeLast());
+    if (_stack.length > 1) {
+      if (widget.expanded) widget.onExpand?.call(false);
+      setState(() => _stack.removeLast());
+    }
   }
 
   void _onQuery(String value) {
     _debounce?.cancel();
     final query = value.trim();
-    if (query.length < 2) {
-      setState(() => _query = query);
-      return;
-    }
+    setState(() => _query = query);
+    if (query.length < 2) return;
     _debounce = Timer(const Duration(milliseconds: 250), () {
       if (!mounted) return;
       final listing = _help.listing(query: query);
       if (!listing.isLoaded && !listing.isLoading) {
         unawaited(listing.loadMore());
       }
-      setState(() => _query = query);
     });
   }
 
@@ -170,12 +216,7 @@ class _HelpSectionState extends State<_HelpSection> {
     final theme = Theme.of(context);
     final route = _stack.last;
     final manifest = _help.manifest;
-    final title = switch (route) {
-      _HelpListingRoute(:final collection) =>
-        collection?.name ?? _text(ChatText.allArticles),
-      _HelpArticleRoute() => manifest?.name ?? _text(ChatText.helpCenter),
-      _HelpRoot() => _text(ChatText.helpCenter),
-    };
+    final title = _text(ChatText.helpCenter);
     final articleUrl = route is _HelpArticleRoute && widget.onOpenLink != null
         ? manifest?.articleUrl(route.slug)
         : null;
@@ -188,45 +229,90 @@ class _HelpSectionState extends State<_HelpSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _MessengerHeader(
-            title: title,
-            leading: _stack.length > 1
-                ? IconButton(
-                    tooltip: _text(ChatText.backToHelp),
-                    onPressed: _pop,
-                    icon: const BackButtonIcon(),
-                  )
-                : null,
-            actions: [
-              if (articleUrl != null)
-                IconButton(
-                  tooltip: _text(ChatText.openInHelpCenter),
-                  onPressed: () => unawaited(
-                    widget.onOpenLink!(articleUrl).catchError((Object _) {}),
+          FutureBuilder<ChatHelpArticle>(
+            key: ValueKey(route),
+            future: route is _HelpArticleRoute ? route.article : null,
+            builder: (context, snapshot) => _MessengerHeader(
+              title: route is _HelpArticleRoute
+                  ? snapshot.data?.title ?? title
+                  : title,
+              leading: _stack.length > 1
+                  ? IconButton(
+                      tooltip: _text(ChatText.backToHelp),
+                      onPressed: _pop,
+                      icon: const ChatWidgetIcon(ChatGlyph.back, size: 22),
+                    )
+                  : null,
+              actions: [
+                if (route is _HelpArticleRoute && widget.onExpand != null)
+                  IconButton(
+                    tooltip: _text(
+                      widget.expanded
+                          ? ChatText.restoreArticle
+                          : ChatText.expandArticle,
+                    ),
+                    onPressed: () => widget.onExpand!(!widget.expanded),
+                    icon: ChatWidgetIcon(
+                      widget.expanded
+                          ? ChatGlyph.restoreArticle
+                          : ChatGlyph.expandArticle,
+                      size: 18,
+                    ),
                   ),
-                  icon: const Icon(Icons.open_in_new_rounded),
-                ),
-              ?widget.close,
-            ],
+                if (articleUrl != null)
+                  IconButton(
+                    tooltip: _text(ChatText.openInHelpCenter),
+                    onPressed: () => unawaited(
+                      widget.onOpenLink!(articleUrl).catchError((Object _) {}),
+                    ),
+                    icon: const ChatWidgetIcon(ChatGlyph.openArticle, size: 22),
+                  ),
+                ?widget.close,
+              ],
+            ),
           ),
           Expanded(
             child: Directionality(
-              // Article text follows its own language; chrome follows the app.
+              // Help content and labels follow the resolved Help Center language.
               textDirection:
                   _rtlLanguages.contains(locale.split('-').first.toLowerCase())
                   ? TextDirection.rtl
+                  : locale.isNotEmpty
+                  ? TextDirection.ltr
                   : Directionality.of(context),
               child: DefaultTextStyle.merge(
                 style: TextStyle(color: theme.colorScheme.onSurface),
-                child: SingleChildScrollView(
-                  key: ValueKey('help-${_stack.length}-${route.runtimeType}'),
+                child: RawScrollbar(
                   controller: _scroll,
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: switch (route) {
-                    _HelpRoot() => _root(),
-                    _HelpListingRoute() => _listingPage(route),
-                    _HelpArticleRoute() => _articlePage(route),
-                  },
+                  thickness: 3,
+                  thumbVisibility: true,
+                  thumbColor: ChatBrandColors.resolve(theme).borderStrong,
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context)
+                        .copyWith(scrollbars: false),
+                    child: SingleChildScrollView(
+                      key: ValueKey(
+                        'help-${_stack.length}-${route.runtimeType}',
+                      ),
+                      controller: _scroll,
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth:
+                                widget.expanded && route is _HelpArticleRoute
+                                ? 756
+                                : 376,
+                          ),
+                          child: switch (route) {
+                            _HelpRoot() => _root(),
+                            _HelpListingRoute() => _listingPage(route),
+                            _HelpArticleRoute() => _articlePage(route),
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -244,7 +330,7 @@ class _HelpSectionState extends State<_HelpSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
+          padding: const EdgeInsets.fromLTRB(18, 24, 18, 18),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -255,14 +341,18 @@ class _HelpSectionState extends State<_HelpSection> {
                     Text(
                       manifest?.name ?? _text(ChatText.helpCenter),
                       style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: const FontWeight(750),
+                        height: 1.15,
+                        letterSpacing: -.45,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       _text(ChatText.helpCenterDescription),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.5,
                       ),
                     ),
                   ],
@@ -274,7 +364,7 @@ class _HelpSectionState extends State<_HelpSection> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: _HelpSearchField(
             controller: _search,
             hint: _text(ChatText.searchHelp),
@@ -303,21 +393,53 @@ class _HelpSectionState extends State<_HelpSection> {
     onSelected: (locale) => unawaited(_help.selectLocale(locale)),
     itemBuilder: (_) => [
       for (final locale in manifest.availableLocales)
-        PopupMenuItem(value: locale, child: Text(_languageName(locale))),
+        PopupMenuItem(
+          height: 36,
+          value: locale,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _languageFlag(locale),
+              const SizedBox(width: 8),
+              Flexible(child: Text(_languageName(locale))),
+            ],
+          ),
+        ),
     ],
     child: ConstrainedBox(
-      // Platform minimum touch target.
-      constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(width: 8),
-          const Icon(Icons.language_rounded, size: 18),
-          const SizedBox(width: 4),
-          Text(manifest.activeLocale.toUpperCase()),
-          const Icon(Icons.expand_more_rounded, size: 18),
-          const SizedBox(width: 8),
-        ],
+      constraints: BoxConstraints(
+        minHeight:
+            Theme.of(context).materialTapTargetSize ==
+                MaterialTapTargetSize.padded
+            ? 48
+            : 40,
+        maxWidth: min(154, MediaQuery.sizeOf(context).width * .38),
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(width: 8),
+            _languageFlag(manifest.activeLocale),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _languageName(manifest.activeLocale),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+            const Icon(Icons.expand_more_rounded, size: 18),
+            const SizedBox(width: 8),
+          ],
+        ),
       ),
     ),
   );
@@ -340,7 +462,7 @@ class _HelpSectionState extends State<_HelpSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 5),
           // Wraps under the heading when large text makes the button wide.
           child: Wrap(
             alignment: WrapAlignment.spaceBetween,
@@ -349,15 +471,36 @@ class _HelpSectionState extends State<_HelpSection> {
             runSpacing: 4,
             children: [
               Text(
-                _text(ChatText.browseHelp),
-                style: theme.textTheme.titleSmall?.copyWith(
+                _text(ChatText.browseHelp).toUpperCase(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 11,
+                  letterSpacing: .88,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               OutlinedButton(
                 onPressed: () => _push(const _HelpListingRoute(null)),
-                style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
-                child: Text(_text(ChatText.viewAllArticles)),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  minimumSize: const Size(48, 32),
+                  textStyle: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                  foregroundColor: theme.colorScheme.secondary,
+                  side: BorderSide(color: theme.colorScheme.outlineVariant),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: Text(_text(ChatText.viewAllArticles))),
+                    const Icon(Icons.chevron_right, size: 16),
+                  ],
+                ),
               ),
             ],
           ),
@@ -383,10 +526,21 @@ class _HelpSectionState extends State<_HelpSection> {
 
   Widget _searchResults() {
     final listing = _help.listing(query: _query);
+    if (!listing.isLoaded && listing.error == null) {
+      return const _HelpSkeleton(rows: 4);
+    }
+    final label = listing.articles.isEmpty
+        ? ChatText.noSearchResults
+        : ChatText.searchResults;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _HelpNote(_text(ChatText.searchResults), title: true),
+        if (listing.isLoaded)
+          _HelpNote(
+            listing.articles.isEmpty
+                ? '${_text(label)} “$_query”'
+                : '${_text(label)}: “$_query”',
+          ),
         ..._articles(
           listing,
           empty: _HelpEmpty(
@@ -409,7 +563,7 @@ class _HelpSectionState extends State<_HelpSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          padding: const EdgeInsets.fromLTRB(18, 24, 18, 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -418,19 +572,23 @@ class _HelpSectionState extends State<_HelpSection> {
                 child: Text(
                   collection?.name ?? _text(ChatText.allArticles),
                   style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: const FontWeight(750),
+                    height: 1.15,
+                    letterSpacing: -.45,
                   ),
                 ),
               ),
-              if (collection?.description.isNotEmpty ?? false) ...[
-                const SizedBox(height: 4),
-                Text(
-                  collection!.description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+              const SizedBox(height: 5),
+              Text(
+                collection?.description.isNotEmpty == true
+                    ? collection!.description
+                    : _text(ChatText.browseSupportArticles),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  height: 1.5,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-              ],
+              ),
             ],
           ),
         ),
@@ -496,6 +654,7 @@ class _HelpSectionState extends State<_HelpSection> {
   }
 
   Widget _articlePage(_HelpArticleRoute route) => FutureBuilder(
+    key: ValueKey(route.id),
     future: route.article,
     builder: (context, snapshot) {
       final article = snapshot.data;
@@ -569,39 +728,97 @@ class _HelpSearchField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.clearLabel,
+    this.home = false,
     required this.onChanged,
     required this.onSubmitted,
   });
   final TextEditingController controller;
   final String hint, clearLabel;
+  final bool home;
   final ValueChanged<String> onChanged, onSubmitted;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<TextEditingValue>(
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final radius = BorderRadius.circular(home ? 12 : 13);
+    final field = ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) => TextField(
         controller: controller,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,
+        style: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(fontSize: home ? 12 : 13),
         inputFormatters: [LengthLimitingTextInputFormatter(120)],
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: const Icon(Icons.search_rounded),
-          suffixIcon: value.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: clearLabel,
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () {
-                    controller.clear();
-                    onChanged('');
-                  },
+          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: home ? 12 : 13,
+            color: home ? scheme.onSurfaceVariant : ChatTheme.faint(theme),
+          ),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: radius,
+            borderSide: BorderSide(
+              color: home
+                  ? scheme.outlineVariant
+                  : ChatBrandColors.resolve(theme).borderStrong,
+            ),
+          ),
+          suffixIconConstraints: const BoxConstraints(minHeight: 46),
+          suffixIcon: Padding(
+            padding: const EdgeInsetsDirectional.only(end: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (value.text.isNotEmpty)
+                  IconButton(
+                    style: IconButton.styleFrom(
+                      minimumSize: Size.square(home ? 31 : 36),
+                    ),
+                    tooltip: clearLabel,
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    onPressed: () {
+                      controller.clear();
+                      onChanged('');
+                    },
+                  ),
+                IconButton(
+                  style: IconButton.styleFrom(
+                    minimumSize: Size.square(home ? 31 : 36),
+                  ),
+                  tooltip: hint,
+                  icon: ChatWidgetIcon(ChatGlyph.search, size: home ? 18 : 19),
+                  onPressed: () => onSubmitted(controller.text),
                 ),
+              ],
+            ),
+          ),
         ),
       ),
     );
+    return home
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              borderRadius: radius,
+              boxShadow: [
+                BoxShadow(
+                  color: scheme.shadow.withValues(alpha: .05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: field,
+          )
+        : field;
   }
 }
 
@@ -614,25 +831,39 @@ class _HelpGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Material(
         color: scheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
             for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) Divider(height: 1, color: scheme.outlineVariant),
               children[i],
+              Divider(height: 1, color: scheme.outlineVariant),
             ],
           ],
         ),
       ),
     );
   }
+}
+
+class _RowArrow extends StatelessWidget {
+  const _RowArrow({required this.size, required this.color});
+  final double size;
+  final Color color;
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Text(
+      Directionality.of(context) == TextDirection.rtl ? '‹' : '›',
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontSize: size,
+        height: 1,
+        fontWeight: const FontWeight(450),
+        color: color,
+      ),
+    ),
+  );
 }
 
 class _HelpCollectionRow extends StatelessWidget {
@@ -660,7 +891,7 @@ class _HelpCollectionRow extends StatelessWidget {
         label: '${collection.name}, $count',
         excludeSemantics: true,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
           child: Row(
             children: [
               Expanded(
@@ -673,7 +904,7 @@ class _HelpCollectionRow extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       description,
                       maxLines: 2,
@@ -685,17 +916,15 @@ class _HelpCollectionRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 '${collection.articleCount}',
-                style: theme.textTheme.labelLarge,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: const FontWeight(650),
+                ),
               ),
-              Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left_rounded
-                    : Icons.chevron_right_rounded,
-                color: scheme.onSurfaceVariant,
-              ),
+              const SizedBox(width: 7),
+              _RowArrow(size: 24, color: scheme.onSurface),
             ],
           ),
         ),
@@ -710,8 +939,11 @@ class _HelpArticleRow extends StatelessWidget {
     required this.title,
     required this.excerpt,
     required this.onTap,
+    this.inlineArrow = false,
+    this.browse = false,
   });
   final String title, excerpt;
+  final bool inlineArrow, browse;
   final VoidCallback onTap;
 
   @override
@@ -721,45 +953,103 @@ class _HelpArticleRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 52),
+        constraints: BoxConstraints(
+          minHeight: !inlineArrow
+              ? 61
+              : browse &&
+                    theme.materialTapTargetSize != MaterialTapTargetSize.padded
+              ? 42
+              : 48,
+        ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: inlineArrow && !browse ? 5 : 4,
+            vertical: browse
+                ? 9
+                : inlineArrow
+                ? 10
+                : 11.6,
+          ),
           child: Row(
+            mainAxisSize: browse ? MainAxisSize.min : MainAxisSize.max,
             children: [
-              Expanded(
+              Flexible(
+                fit: inlineArrow ? FlexFit.loose : FlexFit.tight,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontSize: inlineArrow ? 12 : 13,
+                        fontWeight: inlineArrow && !browse
+                            ? const FontWeight(650)
+                            : FontWeight.w700,
                       ),
                     ),
                     if (excerpt.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        excerpt,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
+                      const SizedBox(height: 4),
+                      _ArticleExcerpt(excerpt),
                     ],
                   ],
                 ),
               ),
-              Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left_rounded
-                    : Icons.chevron_right_rounded,
-                color: scheme.onSurfaceVariant,
+              SizedBox(width: browse ? 4 : 12),
+              SizedBox(
+                width: inlineArrow ? (browse ? 18 : 27) : null,
+                child: _RowArrow(
+                  size: inlineArrow ? 19 : 24,
+                  color: inlineArrow
+                      ? scheme.onSurfaceVariant
+                      : scheme.onSurface,
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Chrome clamps the excerpt at the last line break before adding an ellipsis.
+class _ArticleExcerpt extends StatelessWidget {
+  const _ArticleExcerpt(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style = theme.textTheme.bodySmall!.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return LayoutBuilder(
+      builder: (context, bounds) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          locale: Localizations.maybeLocaleOf(context),
+          maxLines: 2,
+        )..layout(maxWidth: bounds.maxWidth);
+        var display = text;
+        if (painter.didExceedMaxLines) {
+          final line = painter.computeLineMetrics().last;
+          final position = painter.getPositionForOffset(
+            Offset(line.left + line.width / 2, line.baseline),
+          );
+          final end = painter.getLineBoundary(position).end;
+          display = '${text.substring(0, end).trimRight()}…';
+        }
+        painter.dispose();
+        return Text(
+          display,
+          semanticsLabel: text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        );
+      },
     );
   }
 }
@@ -779,7 +1069,7 @@ class _HelpHandoff extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      margin: const EdgeInsets.fromLTRB(18, 24, 18, 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
@@ -798,7 +1088,9 @@ class _HelpHandoff extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             body,
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 11,
+              height: 1.5,
               color: scheme.onSurfaceVariant,
             ),
           ),
@@ -806,9 +1098,13 @@ class _HelpHandoff extends StatelessWidget {
           FilledButton(
             onPressed: onPressed,
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(44),
+              minimumSize: const Size.fromHeight(40),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+              textStyle: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: const FontWeight(750),
+              ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
             child: Text(action),
@@ -915,6 +1211,7 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
   late ChatHelpDocument _document = ChatHelpDocument.parse(
     widget.article.bodyMarkdown,
   );
+  bool _contentsOpen = false;
   final _anchors = <String, GlobalKey>{};
 
   @override
@@ -923,6 +1220,7 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
     if (oldWidget.article.bodyMarkdown != widget.article.bodyMarkdown) {
       _document = ChatHelpDocument.parse(widget.article.bodyMarkdown);
       _anchors.clear();
+      _contentsOpen = false;
     }
   }
 
@@ -951,25 +1249,47 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: const EdgeInsets.fromLTRB(18, 24, 18, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (article.collection != null) ...[
+                Text(
+                  article.collection!.name.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color:
+                        theme.materialTapTargetSize ==
+                            MaterialTapTargetSize.padded
+                        ? scheme.onPrimaryContainer
+                        : scheme.primary,
+                    fontSize: 10,
+                    height: 1.15,
+                    fontWeight: const FontWeight(750),
+                    letterSpacing: .8,
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
               Semantics(
                 header: true,
                 child: Text(
                   article.title,
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
+                    fontWeight: const FontWeight(750),
+                    fontSize: 23,
+                    letterSpacing: -.805,
+                    height: 1.2,
                   ),
                 ),
               ),
               if (article.excerpt.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   article.excerpt,
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    height: 1.55,
+                    letterSpacing: 0,
                     color: scheme.onSurfaceVariant,
                   ),
                 ),
@@ -979,7 +1299,7 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
         ),
         if (outline.length > 1)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 0),
             child: Material(
               color: scheme.surfaceContainerLow,
               shape: RoundedRectangleBorder(
@@ -987,34 +1307,96 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
                 side: BorderSide(color: scheme.outlineVariant),
               ),
               clipBehavior: Clip.antiAlias,
-              child: Theme(
-                data: theme.copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  title: Text(
-                    widget.strings.text(ChatText.onThisPage),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Semantics(
+                    button: true,
+                    expanded: _contentsOpen,
+                    child: InkWell(
+                      onTap: () =>
+                          setState(() => _contentsOpen = !_contentsOpen),
+                      child: Container(
+                        alignment: AlignmentDirectional.centerStart,
+                        constraints: BoxConstraints(
+                          minHeight:
+                              theme.materialTapTargetSize ==
+                                  MaterialTapTargetSize.padded
+                              ? 48
+                              : 46,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 13,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            RotatedBox(
+                              quarterTurns: _contentsOpen
+                                  ? 1
+                                  : Directionality.of(context) ==
+                                        TextDirection.rtl
+                                  ? 2
+                                  : 0,
+                              child: const Icon(Icons.play_arrow, size: 12),
+                            ),
+                            Flexible(
+                              child: Text(
+                                widget.strings.text(ChatText.onThisPage),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  childrenPadding: const EdgeInsets.only(bottom: 8),
-                  children: [
+                  if (_contentsOpen) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Divider(height: 1, color: scheme.outlineVariant),
+                    ),
                     for (final heading in outline)
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsetsDirectional.only(
-                          start: heading.level >= 3 ? 32 : 16,
-                          end: 16,
+                      Semantics(
+                        link: true,
+                        child: InkWell(
+                          onTap: () => _jump(heading.id!),
+                          child: Container(
+                            alignment: AlignmentDirectional.centerStart,
+                            constraints: BoxConstraints(
+                              minHeight:
+                                  theme.materialTapTargetSize ==
+                                      MaterialTapTargetSize.padded
+                                  ? 48
+                                  : 26,
+                            ),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                              heading.level >= 3 ? 26 : 14,
+                              9,
+                              14,
+                              2,
+                            ),
+                            child: Text(
+                              heading.text,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
                         ),
-                        title: Text(heading.text),
-                        onTap: () => _jump(heading.id!),
                       ),
+                    const SizedBox(height: 10),
                   ],
-                ),
+                ],
               ),
             ),
           ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          padding: const EdgeInsets.fromLTRB(18, 24, 18, 0),
           child: _HelpMarkdown(
             document: _document,
             anchors: _anchors,
@@ -1127,28 +1509,39 @@ class _HelpMarkdownState extends State<_HelpMarkdown> {
     _disposeRecognizers();
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final body = theme.textTheme.bodyLarge?.copyWith(height: 1.55);
+    final body = theme.textTheme.bodyMedium?.copyWith(
+      fontSize: 13,
+      letterSpacing: 0,
+      height: 1.68,
+      color: theme.brightness == Brightness.light
+          ? const Color(0xff3f3f46)
+          : scheme.onSurface,
+    );
     final blocks = <Widget>[];
     for (final block in widget.document.blocks) {
       switch (block) {
-        case ChatHelpHeading(:final level, :final content, :final id):
-          final style = switch (level) {
-            1 => theme.textTheme.headlineSmall,
-            2 => theme.textTheme.titleLarge,
-            3 => theme.textTheme.titleMedium,
-            _ => theme.textTheme.titleSmall,
-          }?.copyWith(fontWeight: FontWeight.w700);
+        case ChatHelpHeading(:final content, :final id):
+          final style = theme.textTheme.titleMedium?.copyWith(
+            fontSize: 15,
+            height: 1.35,
+            letterSpacing: 0,
+            fontWeight: FontWeight.w700,
+          );
           blocks.add(
             Padding(
               key: id == null
                   ? null
                   : widget.anchors.putIfAbsent(id, GlobalKey.new),
-              padding: const EdgeInsets.only(top: 20, bottom: 6),
+              padding: const EdgeInsets.only(top: 23),
               child: Semantics(header: true, child: _rich(content, style)),
             ),
           );
         case ChatHelpParagraph(:final content):
-          blocks.add(_spaced(_rich(content, body)));
+          blocks.add(
+            blocks.isEmpty
+                ? _rich(content, body)
+                : _spaced(_rich(content, body)),
+          );
         case ChatHelpQuote(:final content):
           blocks.add(
             _spaced(
@@ -1177,12 +1570,19 @@ class _HelpMarkdownState extends State<_HelpMarkdown> {
                 children: [
                   for (var i = 0; i < items.length; i++)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: EdgeInsetsDirectional.only(
+                        start: 8,
+                        top: i == 0 ? 0 : 5,
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 26,
+                            width: items[i].checked != null
+                                ? 22
+                                : ordered
+                                ? (i + 1).toString().length * 8.0 + 8
+                                : 12,
                             child: switch (items[i].checked) {
                               true => Icon(
                                 Icons.check_box_rounded,
@@ -1197,9 +1597,28 @@ class _HelpMarkdownState extends State<_HelpMarkdown> {
                                 size: 18,
                                 color: scheme.onSurfaceVariant,
                               ),
-                              null => Text(
-                                ordered ? '${i + 1}.' : '•',
+                              null when ordered => Text(
+                                '${i + 1}.',
                                 style: body,
+                              ),
+                              null => SizedBox(
+                                height:
+                                    MediaQuery.textScalerOf(context).scale(13) *
+                                    1.68,
+                                child: Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: body?.color,
+                                    ),
+                                    child: SizedBox.square(
+                                      dimension: MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(4),
+                                    ),
+                                  ),
+                                ),
                               ),
                             },
                           ),
@@ -1270,7 +1689,7 @@ class _HelpMarkdownState extends State<_HelpMarkdown> {
   }
 
   Widget _spaced(Widget child) =>
-      Padding(padding: const EdgeInsets.only(top: 6, bottom: 6), child: child);
+      Padding(padding: const EdgeInsets.only(top: 11.5), child: child);
 
   Widget _cell(Widget child) => ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 260),

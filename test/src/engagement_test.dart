@@ -136,7 +136,11 @@ void main() {
       // read control; the host calls client.markRead itself.
       await tester.pumpWidget(
         MaterialApp(
-          home: ChatScreen(client: client, automaticReadReporting: false),
+          home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
+            client: client,
+            automaticReadReporting: false,
+          ),
         ),
       );
       await tester.pumpAndSettle();

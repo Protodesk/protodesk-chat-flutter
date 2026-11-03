@@ -8,8 +8,11 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOT_FILES = ('.pubignore', 'pubspec.yaml', 'README.md', 'CHANGELOG.md', 'LICENSE', 'NOTICE')
-SOURCE_TREES = ('lib', 'android', 'ios', 'docs', 'screenshots', 'example/lib', 'examples/push_adapters/lib')
-EXTRA_FILES = ('example/README.md', 'example/pubspec.yaml', 'examples/push_adapters/README.md', 'examples/push_adapters/pubspec.yaml', 'examples/push_adapters/ios/ChatAPNsBridge.swift')
+SOURCE_TREES = ('lib', 'android', 'ios', 'screenshots', 'example/lib', 'examples/push_adapters/lib')
+# Keep contributor guides and visual comparison fixtures in the checkout.
+PUBLIC_GUIDES = ('docs/guide.md', 'docs/ios-swift-package-manager.md',
+                 'docs/presentation-lifecycle.md', 'docs/setup-diagnostics.md')
+EXTRA_FILES = ('assets/fonts/Inter.ttf', 'assets/fonts/Inter-Italic.ttf', 'assets/fonts/OFL.txt', 'example/README.md', 'example/pubspec.yaml', 'examples/push_adapters/README.md', 'examples/push_adapters/pubspec.yaml', 'examples/push_adapters/ios/ChatAPNsBridge.swift')
 SUFFIXES = {'.dart', '.java', '.kt', '.gradle', '.xml', '.swift', '.podspec', '.h', '.m', '.mm', '.md', '.plist', '.xcprivacy', '.png'}
 # Repository-relative paths only; absolute GitHub URLs keep pointing at the repository.
 RELATIVE = r'(?<![\w/.-])'
@@ -31,7 +34,7 @@ def stage(source, destination):
     if destination.exists():
         raise ValueError('Candidate destination must not already exist.')
     files = []
-    for name in ROOT_FILES + EXTRA_FILES:
+    for name in ROOT_FILES + PUBLIC_GUIDES + EXTRA_FILES:
         path = source / name
         if path.exists():
             files.append(path)

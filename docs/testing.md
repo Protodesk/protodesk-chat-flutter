@@ -15,12 +15,11 @@ anonymous and verified sessions: exchange, authenticated messages, realtime even
 server-drain reconnect with a fresh ticket, history and logout. Other tests inject
 transports for failure/race coverage; none need production credentials.
 
-`test/goldens/chat_screen_golden_test.dart` compares four reviewed PNG baselines:
-
-- English light phone with customer/support history and read action.
-- Indonesian dark phone with 2x text and wrapping controls.
-- English light tablet with empty history.
-- Indonesian dark phone with a disconnected, queued message and discard control.
+`test/goldens/chat_screen_golden_test.dart` checks the messenger in light and dark themes,
+English and Indonesian, large text, and phone and tablet layouts. The
+`web_home_phone`, `web_messages_empty`, and `web_new_chat` fixtures exercise
+the fresh-visitor screens at the 451 × 663 viewport used to inspect the
+live website widget. These are Flutter renders with local fixture data.
 
 Golden generation environment: Flutter **3.47.5**, Dart **3.13.4**, macOS arm64.
 Golden tests are tagged `golden` and run only on macOS; Linux CI excludes them.
@@ -29,9 +28,9 @@ glyph anti-aliasing differs between macOS releases (the macOS 15 CI runner diffe
 from macOS 27 baselines by at most 0.5%). Real layout or color regressions exceed
 that. A Flutter version change may still need a separately reviewed baseline
 migration.
-Tests load Roboto and MaterialIcons from the resolved Flutter SDK using
-`.dart_tool/package_config.json`; there are no absolute workstation paths or
-network fonts. Sizes, theme platform, locale, text scale and fixture content are
+Tests load Inter from the bundled website font files and fallback fonts and MaterialIcons from the resolved Flutter SDK using
+`.dart_tool/package_config.json`; there are no account-specific paths or
+network fonts. macOS goldens use the system emoji font for language flags. Sizes, theme platform, locale, text scale and fixture content are
 fixed; focus/caret and automatic read timers are excluded from screenshots.
 
 After an intentional UI change:
@@ -47,6 +46,8 @@ appear in a `failures/` directory beside the golden test and are ignored by Git.
 Goldens check pixels; semantic/contrast/keyboard tests remain separate and necessary.
 
 ## Native integration harness
+
+See the [Pixel 7a side-by-side comparison](android-website-comparison.md) for the website and native captures and the Android replay command.
 
 From `example/`:
 

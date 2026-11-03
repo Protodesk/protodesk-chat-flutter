@@ -65,7 +65,9 @@ void main() {
       await tester.pumpAndSettle();
       transport.sockets.single.emit('realtime.ready', {'cursor': 'ready'});
       await tester.pumpAndSettle();
-      await tester.tap(find.text('foto.png (${pixel.length} bita)'));
+      await tester.tap(
+        find.bySemanticsLabel('foto.png (${pixel.length} bita)'),
+      );
       await tester.pumpAndSettle();
       final image = tester.widget<Image>(find.byType(Image));
       expect(image.semanticLabel, 'foto.png');

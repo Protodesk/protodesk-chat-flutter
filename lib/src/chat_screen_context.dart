@@ -24,7 +24,6 @@ class _ContactPromptState extends State<_ContactPrompt> {
   final _emailFocus = FocusNode();
   final _confirmationFocus = FocusNode();
   var _view = _ContactView.loading;
-  bool _expanded = false;
   bool _invalid = false, _failed = false, _sharedEmail = false;
   // One key per payload: an uncertain save is retried with the same key.
   String? _pendingPayload, _pendingKey;
@@ -124,8 +123,8 @@ class _ContactPromptState extends State<_ContactPrompt> {
 
   Widget _panel(ThemeData theme, Widget child) => Container(
     width: double.infinity,
-    margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-    padding: const EdgeInsets.all(16),
+    margin: const EdgeInsets.fromLTRB(18, 16, 18, 0),
+    padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(12),
@@ -135,34 +134,16 @@ class _ContactPromptState extends State<_ContactPrompt> {
   );
 
   Widget _form(ThemeData theme) {
+    final actionHeight =
+        RendererBinding.instance.mouseTracker.mouseIsConnected ||
+            const {
+              TargetPlatform.macOS,
+              TargetPlatform.windows,
+              TargetPlatform.linux,
+            }.contains(theme.platform)
+        ? 34.0
+        : 40.0;
     final saving = _view == _ContactView.saving;
-    if (!_expanded && !saving) {
-      return _panel(
-        theme,
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 8,
-          children: [
-            Text(
-              _text(ChatText.contactTitle),
-              style: theme.textTheme.titleSmall,
-            ),
-            TextButton.icon(
-              key: const ValueKey('contact-expand'),
-              icon: const Icon(Icons.mail_outline_rounded, size: 18),
-              label: Text(_text(ChatText.contactExpand)),
-              onPressed: () {
-                setState(() => _expanded = true);
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) _emailFocus.requestFocus();
-                });
-              },
-            ),
-          ],
-        ),
-      );
-    }
     return _panel(
       theme,
       Semantics(
@@ -172,28 +153,14 @@ class _ContactPromptState extends State<_ContactPrompt> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      _text(ChatText.contactTitle),
-                      style: theme.textTheme.titleSmall,
-                    ),
-                  ),
+            Semantics(
+              header: true,
+              child: Text(
+                _text(ChatText.contactTitle),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
-                IconButton(
-                  tooltip: _text(ChatText.close),
-                  onPressed: saving
-                      ? null
-                      : () {
-                          _emailFocus.unfocus();
-                          setState(() => _expanded = false);
-                        },
-                  icon: const Icon(Icons.close_rounded, size: 20),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -235,18 +202,27 @@ class _ContactPromptState extends State<_ContactPrompt> {
             ],
             const SizedBox(height: 8),
             Wrap(
-              alignment: WrapAlignment.end,
+              alignment: WrapAlignment.start,
               crossAxisAlignment: WrapCrossAlignment.center,
               spacing: 8,
               runSpacing: 4,
               children: [
-                TextButton(
-                  onPressed: saving
-                      ? null
-                      : () => unawaited(_submit(dismiss: true)),
-                  child: Text(_text(ChatText.contactDismiss)),
-                ),
-                FilledButton.tonal(
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: Size(0, actionHeight),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    textStyle: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    backgroundColor: theme.colorScheme.onSurface,
+                    foregroundColor: theme.colorScheme.surface,
+                  ),
                   onPressed: saving
                       ? null
                       : () => unawaited(_submit(dismiss: false)),
@@ -257,6 +233,23 @@ class _ContactPromptState extends State<_ContactPrompt> {
                           : ChatText.contactShare,
                     ),
                   ),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: Size(0, actionHeight),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    foregroundColor: theme.colorScheme.onSurfaceVariant,
+                    textStyle: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onPressed: saving
+                      ? null
+                      : () => unawaited(_submit(dismiss: true)),
+                  child: Text(_text(ChatText.contactDismiss)),
                 ),
               ],
             ),

@@ -4,30 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:protodesk_chat/protodesk_chat_ui.dart';
 
-import '../support/bootstrap.dart';
 import '../support/fake_transport.dart';
 import '../support/help_fixtures.dart';
-
-FakeTransport helpTransport({
-  bool help = true,
-  bool unavailable = false,
-  bool featured = true,
-}) {
-  final transport = FakeTransport();
-  transport.handler = (call) async {
-    final path = call.uri.path;
-    if (path.endsWith('/bootstrap')) {
-      return ChatResponse(200, bootstrap(help: help));
-    }
-    if (path.contains('/help-center') && unavailable) {
-      return const ChatResponse(404, {
-        'error': {'code': 'chat.help_center_unavailable'},
-      });
-    }
-    return helpResponse(call, featured: featured) ?? transport.respond(call);
-  };
-  return transport;
-}
 
 Iterable<Call> helpCalls(FakeTransport transport) =>
     transport.calls.where((c) => c.uri.path.contains('/help-center'));
@@ -73,7 +51,7 @@ void main() {
         tester.widget<TextField>(find.byType(TextField).first).controller!.text,
         isEmpty,
       );
-      expect(find.text('Browse topics'), findsOneWidget);
+      expect(find.text('BROWSE TOPICS'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await client.dispose();
     },
@@ -88,9 +66,7 @@ void main() {
     expect(tab('Help'), findsOneWidget);
     expect(find.text('Find an answer'), findsOneWidget);
     expect(
-      find.text(
-        'We’re here to help. Ask a question or find an answer in the Help Center.',
-      ),
+      find.text('Ask a question or find an answer in the Help Center.'),
       findsOneWidget,
     );
     await tester.pumpWidget(const SizedBox());
@@ -128,7 +104,7 @@ void main() {
       find.text('Find clear answers from our support team.'),
       findsOneWidget,
     );
-    expect(find.text('Browse topics'), findsOneWidget);
+    expect(find.text('BROWSE TOPICS'), findsOneWidget);
     expect(find.text('Still need help?'), findsOneWidget);
 
     await tester.tap(
@@ -149,6 +125,16 @@ void main() {
     expect(find.text('Starter'), findsOneWidget);
     expect(find.text('Related articles'), findsOneWidget);
 
+    final normalWidth = tester.getSize(find.byType(Scaffold).last).width;
+    await tester.tap(find.byTooltip('Expand article'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byType(Scaffold).last).width,
+      greaterThan(normalWidth),
+    );
+    await tester.tap(find.byTooltip('Restore article size'));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(Scaffold).last).width, normalWidth);
     await tester.tap(find.byTooltip('Open in Help Center'));
     expect(
       opened.single.toString(),
@@ -161,7 +147,7 @@ void main() {
     // System back also walks the Help stack before leaving the screen.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.text('Browse topics'), findsOneWidget);
+    expect(find.text('BROWSE TOPICS'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -204,7 +190,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pumpAndSettle();
     expect(helpCalls(transport).last.uri.queryParameters['query'], 'workspace');
-    expect(find.text('Search results'), findsOneWidget);
+    expect(find.text('Search results: “workspace”'), findsOneWidget);
     expect(find.text('Navigate your Protodesk workspace'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'nothing');
@@ -225,12 +211,12 @@ void main() {
       transport.calls.where(
         (c) => c.method == 'POST' && c.uri.path.endsWith('/conversations'),
       ),
-      hasLength(1),
+      isEmpty,
     );
     expect(find.byTooltip('Send'), findsOneWidget);
     await tester.tap(find.byTooltip('Conversations'));
     await tester.pumpAndSettle();
-    expect(find.text('Browse topics'), findsOneWidget);
+    expect(tester.widget<NavigationBar>(navigation).selectedIndex, 1);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -244,18 +230,25 @@ void main() {
     );
     expect(find.text('Add knowledge sources for Evelin'), findsOneWidget);
     expect(find.text('Install Live Chat on your website'), findsOneWidget);
+    await tester.ensureVisible(
+      find.text('Use Evelin to prepare customer replies'),
+    );
     await tester.tap(find.text('Use Evelin to prepare customer replies'));
     await tester.pumpAndSettle();
     expect(find.text('What you can do'), findsOneWidget);
     expect(tester.widget<NavigationBar>(navigation).selectedIndex, 2);
+    await tester.tap(tab('Help'));
+    await tester.pumpAndSettle();
+    expect(find.text('BROWSE TOPICS'), findsOneWidget);
 
     await tester.tap(tab('Home'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'workspace');
-    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pump();
+    await tester.tap(find.byTooltip('Search articles'));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
-    expect(find.text('Search results'), findsOneWidget);
+    expect(find.text('Search results: “workspace”'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -280,11 +273,21 @@ void main() {
   testWidgets('language choice reloads Help in that locale', (tester) async {
     final transport = helpTransport();
     final client = await pumpMessenger(tester, transport);
+    await tester.enterText(find.byType(TextField), 'workspace');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Language: English'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Bahasa Indonesia').last);
     await tester.pumpAndSettle();
     expect(helpCalls(transport).last.uri.queryParameters['locale'], 'id');
+    expect(find.text('TELUSURI TOPIK'), findsOneWidget);
+    expect(find.text('Cari artikel'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      isEmpty,
+    );
+    expect(tab('Messages'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -315,7 +318,7 @@ void main() {
       // Help shows immediately while configuration loads: no Home flash.
       expect(find.text('Chat with us'), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.text('Browse topics'), findsOneWidget);
+      expect(find.text('BROWSE TOPICS'), findsOneWidget);
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       await opened;
@@ -348,7 +351,7 @@ void main() {
       expect(links.single.path, '/en/articles/slug-a5');
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
-      expect(find.text('Browse topics'), findsOneWidget);
+      expect(find.text('BROWSE TOPICS'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await client.dispose();
     });

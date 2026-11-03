@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'attachment_picker.dart';
 import 'host_identity.dart';
@@ -37,7 +39,10 @@ class _ConnectScreenState extends State<ConnectScreen> {
   final _storageOrigin = TextEditingController();
   final _identityEndpoint = TextEditingController();
   final _hostSession = TextEditingController();
+  ProtodeskChatClient? _client;
+  HostIdentity? _identity;
   bool _busy = false;
+  bool get _editing => !_busy && _client == null;
   bool _allowNew = false;
   bool _recoverLost = false;
   bool _persistAttachments = false;
@@ -65,9 +70,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     );
   }
 
-  Future<void> _open({
-    ChatMessengerSection section = ChatMessengerSection.home,
-  }) async {
+  Future<void> _open({ChatMessengerSection? section}) async {
     setState(() {
       _busy = true;
       _error = null;
@@ -75,43 +78,48 @@ class _ConnectScreenState extends State<ConnectScreen> {
     ProtodeskChatClient? client;
     HostIdentity? identity;
     try {
-      final origin = requireHttps(_origin.text.trim(), originOnly: true);
-      if (_app.text.trim().isEmpty) throw const FormatException();
-      if (widget.verified) {
-        final endpoint = requireHttps(_identityEndpoint.text.trim());
-        if (_hostSession.text.trim().isEmpty) throw const FormatException();
-        identity = widget.identityFactory(endpoint, _hostSession.text.trim());
-        _hostSession.clear();
-        await identity.connect();
+      client = _client;
+      if (client == null) {
+        final origin = requireHttps(_origin.text.trim(), originOnly: true);
+        if (_app.text.trim().isEmpty) throw const FormatException();
+        if (widget.verified) {
+          final endpoint = requireHttps(_identityEndpoint.text.trim());
+          if (_hostSession.text.trim().isEmpty) throw const FormatException();
+          identity = widget.identityFactory(endpoint, _hostSession.text.trim());
+          _hostSession.clear();
+          await identity.connect();
+        }
+        if (!mounted) return;
+        client = await widget.initialize(
+          ChatClientOptions(
+            publicChatAppId: _app.text.trim(),
+            identityKey: identity?.identityKey,
+            identityTokenProvider: identity?.freshToken,
+            storage: const PlatformChatStorage(),
+            persistSendQueue: true,
+            attachmentPersistence: _persistAttachments
+                ? ChatAttachmentPersistencePolicy.managedPrivateCopy
+                : ChatAttachmentPersistencePolicy.disabled,
+            attachmentStorageOrigins: {
+              if (_storageOrigin.text.trim().isNotEmpty)
+                requireHttps(_storageOrigin.text.trim(), originOnly: true),
+            },
+            allowNewAnonymousIdentity: !widget.verified && _allowNew,
+            recoverLostAnonymousIdentity: !widget.verified && _recoverLost,
+            baseUrl: origin,
+            platform: Theme.of(context).platform == TargetPlatform.iOS
+                ? 'ios'
+                : 'android',
+          ),
+        );
+        if (!mounted) return;
+        _client = client;
+        _identity = identity;
+        setState(() {
+          _allowNew = false;
+          _recoverLost = false;
+        });
       }
-      if (!mounted) return;
-      client = await widget.initialize(
-        ChatClientOptions(
-          publicChatAppId: _app.text.trim(),
-          identityKey: identity?.identityKey,
-          identityTokenProvider: identity?.freshToken,
-          storage: const PlatformChatStorage(),
-          persistSendQueue: true,
-          attachmentPersistence: _persistAttachments
-              ? ChatAttachmentPersistencePolicy.managedPrivateCopy
-              : ChatAttachmentPersistencePolicy.disabled,
-          attachmentStorageOrigins: {
-            if (_storageOrigin.text.trim().isNotEmpty)
-              requireHttps(_storageOrigin.text.trim(), originOnly: true),
-          },
-          allowNewAnonymousIdentity: !widget.verified && _allowNew,
-          recoverLostAnonymousIdentity: !widget.verified && _recoverLost,
-          baseUrl: origin,
-          platform: Theme.of(context).platform == TargetPlatform.iOS
-              ? 'ios'
-              : 'android',
-        ),
-      );
-      if (!mounted) return;
-      setState(() {
-        _allowNew = false;
-        _recoverLost = false;
-      });
       // openChat pushes the messenger with a close button and completes when
       // it is dismissed; Help falls back to Home if the app has no Help.
       await client.openChat(
@@ -125,7 +133,6 @@ class _ConnectScreenState extends State<ConnectScreen> {
             ? null
             : pickChatAttachment,
       );
-      await client.logout();
     } catch (error) {
       if (mounted)
         setState(
@@ -134,14 +141,33 @@ class _ConnectScreenState extends State<ConnectScreen> {
               : 'Unable to connect. Check public configuration and, for verified chat, your host session and identity endpoint.',
         );
     } finally {
-      await client?.dispose();
-      identity?.close();
+      if (!identical(client, _client) || _client == null) {
+        await client?.dispose();
+        identity?.close();
+      }
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _signOut() async {
+    setState(() => _busy = true);
+    try {
+      await _client?.logout();
+    } on ProtodeskChatException catch (error) {
+      if (mounted) setState(() => _error = error.code);
+    } finally {
+      await _client?.dispose();
+      _identity?.close();
+      _identity = null;
+      _client = null;
       if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   void dispose() {
+    unawaited(_client?.dispose());
+    _identity?.close();
     _identityEndpoint.dispose();
     _hostSession.dispose();
     _origin.dispose();
@@ -157,6 +183,10 @@ class _ConnectScreenState extends State<ConnectScreen> {
         widget.verified ? 'Verified Chat example' : 'Anonymous Chat example',
       ),
     ),
+    floatingActionButton: ChatLauncherButton(
+      label: 'Open support chat',
+      onPressed: _busy ? null : () => _open(),
+    ),
     body: SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(20),
@@ -167,14 +197,14 @@ class _ConnectScreenState extends State<ConnectScreen> {
             ),
             TextField(
               controller: _identityEndpoint,
-              enabled: !_busy,
+              enabled: _editing,
               decoration: const InputDecoration(
                 labelText: 'Host identity endpoint (HTTPS)',
               ),
             ),
             TextField(
               controller: _hostSession,
-              enabled: !_busy,
+              enabled: _editing,
               obscureText: true,
               autocorrect: false,
               enableSuggestions: false,
@@ -185,17 +215,17 @@ class _ConnectScreenState extends State<ConnectScreen> {
           ],
           TextField(
             controller: _origin,
-            enabled: !_busy,
+            enabled: _editing,
             decoration: const InputDecoration(labelText: 'API origin'),
           ),
           TextField(
             controller: _app,
-            enabled: !_busy,
+            enabled: _editing,
             decoration: const InputDecoration(labelText: 'Public Chat App ID'),
           ),
           TextField(
             controller: _storageOrigin,
-            enabled: !_busy,
+            enabled: _editing,
             decoration: const InputDecoration(
               labelText: 'Attachment storage origin (optional)',
             ),
@@ -206,7 +236,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
               'Opt-in: private copies expire after 24 hours. Requires the storage origin.',
             ),
             value: _persistAttachments,
-            onChanged: _busy
+            onChanged: !_editing
                 ? null
                 : (value) =>
                       setState(() => _persistAttachments = value ?? false),
@@ -215,7 +245,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
             CheckboxListTile(
               title: const Text('Create an identity if none is saved'),
               value: _allowNew,
-              onChanged: _busy
+              onChanged: !_editing
                   ? null
                   : (value) => setState(() => _allowNew = value ?? false),
             ),
@@ -226,7 +256,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                 'Starts fresh if old credentials are lost. Old history cannot be restored.',
               ),
               value: _recoverLost,
-              onChanged: _busy
+              onChanged: !_editing
                   ? null
                   : (value) => setState(() => _recoverLost = value ?? false),
             ),
@@ -247,6 +277,11 @@ class _ConnectScreenState extends State<ConnectScreen> {
                 : () => _open(section: ChatMessengerSection.help),
             child: const Text('Open Help Center'),
           ),
+          if (_client != null)
+            TextButton(
+              onPressed: _busy ? null : _signOut,
+              child: const Text('End session'),
+            ),
           TextButton(
             onPressed: _busy ? null : _validateSetup,
             child: const Text('Check setup (offline)'),

@@ -52,6 +52,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
             client: client,
             attachmentPicker: () async => fixtures.source(),
           ),
@@ -82,7 +83,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
       binary.barrier!.complete();
       await tester.pumpAndSettle();
-      expect(find.text('Ready'), findsOneWidget);
+      expect(find.text('3 B'), findsOneWidget);
       await tester.tap(find.byTooltip('Send'));
       await tester.pumpAndSettle();
       expect(tester.widget<TextField>(find.byType(TextField)).readOnly, isTrue);
@@ -95,7 +96,7 @@ void main() {
       expect(posts, hasLength(2));
       expect(posts[0].body, posts[1].body);
       expect(posts[1].body!['attachmentIds'], ['att_1']);
-      expect(find.text('note.txt (3 bytes)'), findsOneWidget);
+      expect(find.text('↓ note.txt · 3 B'), findsOneWidget);
       expect(client.attachments.uploads, isEmpty);
       await tester.pumpWidget(const SizedBox());
       await client.dispose();
@@ -109,7 +110,11 @@ void main() {
     final picker = Completer<ChatAttachmentSource?>();
     await tester.pumpWidget(
       MaterialApp(
-        home: ChatScreen(client: client, attachmentPicker: () => picker.future),
+        home: ChatScreen(
+          initialSection: ChatMessengerSection.messages,
+          client: client,
+          attachmentPicker: () => picker.future,
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -165,19 +170,26 @@ void main() {
         attachmentStorageOrigins: {Uri.parse('https://storage.example.test')},
       ),
     );
-    await tester.pumpWidget(MaterialApp(home: ChatScreen(client: client)));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChatScreen(
+          initialSection: ChatMessengerSection.messages,
+          client: client,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     transport.sockets.single.emit('realtime.ready', {'cursor': 'boundary'});
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('conv_test')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('image.png (3 bytes)'));
+    await tester.tap(find.text('↓ image.png · 3 B'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsOneWidget);
     await client.logout();
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.text('image.png (3 bytes)'), findsNothing);
+    expect(find.text('↓ image.png · 3 B'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     await client.dispose();
   });
@@ -211,6 +223,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
             client: client,
             attachmentPicker: () async => fixtures.source(),
           ),
@@ -230,6 +243,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
             client: client,
             attachmentPicker: () async => fixtures.source(),
           ),

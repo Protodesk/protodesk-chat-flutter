@@ -23,7 +23,11 @@ Future<ProtodeskChatClient> openThread(
       locale: locale,
       localizationsDelegates: ChatLocalizations.localizationsDelegates,
       supportedLocales: ChatLocalizations.supportedLocales,
-      home: ChatScreen(client: client, automaticReadReporting: false),
+      home: ChatScreen(
+        initialSection: ChatMessengerSection.messages,
+        client: client,
+        automaticReadReporting: false,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -241,6 +245,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
             client: client,
             initialConversationId: 'conv_test',
             automaticReadReporting: false,
@@ -259,7 +264,7 @@ void main() {
     });
 
     testWidgets(
-      'contact expansion keeps draft and does not submit or dismiss on close',
+      'optional email form leaves a draft local while the visitor types',
       (tester) async {
         final transport = FakeTransport();
         transport.contact = {
@@ -268,30 +273,12 @@ void main() {
           'canRequest': true,
         };
         final client = await openThread(tester, transport);
-        expect(
-          find.widgetWithText(TextField, 'Email (optional)'),
-          findsNothing,
-        );
-        await tester.tap(find.byKey(const ValueKey('contact-expand')));
-        await tester.pumpAndSettle();
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Email (optional)'),
-          'ada@example.com',
-        );
-        await tester.tap(find.byTooltip('Close'));
-        await tester.pumpAndSettle();
+        final email = find.widgetWithText(TextField, 'Email (optional)');
+        expect(email, findsOneWidget);
+        await tester.enterText(email, 'ada@example.com');
+        await tester.pump();
         expect(contactPosts(transport), isEmpty);
-        await tester.tap(find.byKey(const ValueKey('contact-expand')));
-        await tester.pumpAndSettle();
-        expect(
-          tester
-              .widget<TextField>(
-                find.widgetWithText(TextField, 'Email (optional)'),
-              )
-              .controller!
-              .text,
-          'ada@example.com',
-        );
+        expect(find.byTooltip('Send'), findsOneWidget);
         await tester.pumpWidget(const SizedBox());
         await client.dispose();
       },
@@ -302,9 +289,10 @@ void main() {
       transport.contact = {'email': '', 'dismissed': false, 'canRequest': true};
       final client = await openThread(tester, transport);
       expect(find.text('Stay in touch'), findsOneWidget);
-      expect(find.widgetWithText(TextField, 'Email (optional)'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('contact-expand')));
-      await tester.pumpAndSettle();
+      expect(
+        find.widgetWithText(TextField, 'Email (optional)'),
+        findsOneWidget,
+      );
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Email (optional)'),
@@ -352,8 +340,6 @@ void main() {
         return transport.respond(call);
       };
       final client = await openThread(tester, transport);
-      await tester.tap(find.byKey(const ValueKey('contact-expand')));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Not now'));
       await tester.pumpAndSettle();
       expect(
@@ -408,7 +394,11 @@ void main() {
       final client = await makeClient(transport);
       await tester.pumpWidget(
         MaterialApp(
-          home: ChatScreen(client: client, automaticReadReporting: false),
+          home: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
+            client: client,
+            automaticReadReporting: false,
+          ),
         ),
       );
       await tester.pumpAndSettle();

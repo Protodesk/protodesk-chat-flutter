@@ -113,6 +113,10 @@ class _ConversationSetupState extends State<_ConversationSetup> {
   Widget _label(ChatPreChatField field, ThemeData theme) => Text.rich(
     TextSpan(
       text: field.label,
+      style: theme.textTheme.labelMedium?.copyWith(
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w700,
+      ),
       children: [
         if (field.required)
           TextSpan(
@@ -163,10 +167,7 @@ class _ConversationSetupState extends State<_ConversationSetup> {
           initialValue: _selected[field.id],
           isExpanded: true,
           hint: Text(_t(ChatText.chooseOption)),
-          decoration: InputDecoration(
-            label: _label(field, theme),
-            errorText: error,
-          ),
+          decoration: InputDecoration(errorText: error),
           items: [
             for (final option in field.options)
               DropdownMenuItem(value: option, child: Text(option)),
@@ -203,7 +204,12 @@ class _ConversationSetupState extends State<_ConversationSetup> {
             }
           },
           decoration: InputDecoration(
-            label: _label(field, theme),
+            isDense: true,
+            constraints: const BoxConstraints(minHeight: 43),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 11,
+              vertical: 10,
+            ),
             hintText: field.placeholder,
             errorText: error,
           ),
@@ -217,108 +223,174 @@ class _ConversationSetupState extends State<_ConversationSetup> {
     final config = widget.config;
     final intro = config.preChatForm.enabled ? config.preChatForm.intro : '';
     final choices = config.routingChoices;
-    return ListView(
-      key: const ValueKey('conversation-setup'),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            config.greeting.isEmpty ? _t(ChatText.setupTitle) : config.greeting,
-            style: theme.textTheme.titleLarge?.copyWith(
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const [0, .35],
+          colors: [
+            Color.lerp(
+              theme.scaffoldBackgroundColor,
+              theme.colorScheme.primary,
+              .05,
+            )!,
+            theme.scaffoldBackgroundColor,
+          ],
+        ),
+      ),
+      child: ListView(
+        key: const ValueKey('conversation-setup'),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        children: [
+          Text(
+            config.name.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              letterSpacing: 1.32,
               fontWeight: FontWeight.w700,
             ),
           ),
-        ),
-        if (intro.isNotEmpty) ...[
-          const SizedBox(height: 6),
-          Text(
-            intro,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-        if (widget.status != null) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: _ChatStatus(
-              widget.status!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onErrorContainer,
-              ),
-            ),
-          ),
-        ],
-        for (final field in _fields) ...[
-          const SizedBox(height: 16),
-          KeyedSubtree(
-            key: ValueKey('pre-chat-${field.id}'),
-            child: _field(field, theme),
-          ),
-        ],
-        if (choices.isNotEmpty) ...[
-          const SizedBox(height: 20),
+          const SizedBox(height: 7),
           Semantics(
             header: true,
             child: Text(
-              _t(ChatText.routingLegend),
-              style: theme.textTheme.titleSmall?.copyWith(
+              config.greeting.isEmpty
+                  ? _t(ChatText.setupTitle)
+                  : config.greeting,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          Focus(
-            focusNode: _routingFocus,
-            child: RadioGroup<String>(
-              groupValue: _routing,
-              onChanged: (value) {
-                if (widget.submitting) return;
-                setState(() {
-                  _routing = value;
-                  _routingError = null;
-                });
-              },
+          if (intro.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              intro,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+          if (widget.status != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _ChatStatus(
+                widget.status!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          ],
+          for (final field in _fields) ...[
+            const SizedBox(height: 16),
+            KeyedSubtree(
+              key: ValueKey('pre-chat-${field.id}'),
+              child: field.type == ChatPreChatFieldType.checkbox
+                  ? _field(field, theme)
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ExcludeSemantics(child: _label(field, theme)),
+                        const SizedBox(height: 6),
+                        Semantics(
+                          label: field.label,
+                          child: _field(field, theme),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+          if (choices.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Semantics(
+              header: true,
+              child: Text(
+                _t(ChatText.routingLegend),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Focus(
+              focusNode: _routingFocus,
               child: Column(
                 children: [
                   for (final choice in choices)
-                    RadioListTile<String>(
-                      key: ValueKey('routing-${choice.id}'),
-                      contentPadding: EdgeInsets.zero,
-                      value: choice.id,
-                      title: Text(choice.label),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Semantics(
+                        checked: _routing == choice.id,
+                        inMutuallyExclusiveGroup: true,
+                        child: OutlinedButton(
+                          key: ValueKey('routing-${choice.id}'),
+                          style: OutlinedButton.styleFrom(
+                            alignment: AlignmentDirectional.centerStart,
+                            minimumSize: const Size(double.infinity, 42),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 9,
+                            ),
+                            backgroundColor: _routing == choice.id
+                                ? theme.colorScheme.primaryContainer
+                                : theme.colorScheme.surface,
+                            side: BorderSide(
+                              color: _routing == choice.id
+                                  ? theme.colorScheme.primary
+                                  : ChatBrandColors.resolve(theme).borderStrong,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: widget.submitting
+                              ? null
+                              : () => setState(() {
+                                  _routing = choice.id;
+                                  _routingError = null;
+                                }),
+                          child: Text(
+                            choice.label,
+                            style: theme.textTheme.labelMedium,
+                          ),
+                        ),
+                      ),
                     ),
                 ],
               ),
             ),
-          ),
-          if (_routingError != null)
-            Padding(
-              // Aligns with Material's field error text.
-              padding: const EdgeInsets.only(left: 12),
-              child: _ChatStatus(
-                _routingError!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
+            if (_routingError != null)
+              Padding(
+                // Aligns with Material's field error text.
+                padding: const EdgeInsets.only(left: 12),
+                child: _ChatStatus(
+                  _routingError!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
                 ),
               ),
+          ],
+          const SizedBox(height: 24),
+          _StartButton(
+            setup: true,
+            onPressed: widget.submitting ? null : _submit,
+            label: _t(
+              widget.submitting ? ChatText.starting : ChatText.continueLabel,
             ),
-        ],
-        const SizedBox(height: 24),
-        FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-          onPressed: widget.submitting ? null : _submit,
-          child: Text(
-            _t(widget.submitting ? ChatText.starting : ChatText.continueLabel),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

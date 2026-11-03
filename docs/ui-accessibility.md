@@ -68,7 +68,8 @@ Theme(data: widget.theme ?? Theme.of(context), child: chat)
 ```
 - After:
 ```dart
-Theme(data: ChatTheme.accessible(widget.theme ?? Theme.of(context)), child: chat)
+// Enabled by high contrast, or explicitly through the theme argument:
+ChatScreen(client: client, theme: ChatTheme.accessible(ChatTheme.light()))
 // Padded, standard-density controls with minimum 48 x 48 logical-pixel targets.
 ```
 

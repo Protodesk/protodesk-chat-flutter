@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,6 +47,40 @@ class DisabledAttachmentFiles implements ChatAttachmentFileStore {
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  testWidgets('native launcher restores a dismissed draft on the same client', (
+    tester,
+  ) async {
+    final client = await makeClient(FakeTransport());
+    try {
+      late BuildContext launcher;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              launcher = context;
+              return const Scaffold();
+            },
+          ),
+        ),
+      );
+      unawaited(client.openChat(launcher));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Keep this draft');
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatMessenger), findsNothing);
+      unawaited(client.openChat(launcher));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'Keep this draft'), findsOneWidget);
+      final font = Theme.of(
+        tester.element(find.byType(TextField)),
+      ).textTheme.bodyMedium!.fontFamily;
+      expect(font, Platform.isAndroid ? 'Roboto' : ChatTheme.websiteFont);
+    } finally {
+      await tester.pumpWidget(const SizedBox());
+      await client.dispose();
+    }
+  });
   testWidgets(
     'native secure outbox restores account A and stays isolated from B',
     (tester) async {

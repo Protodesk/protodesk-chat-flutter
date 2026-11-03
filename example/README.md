@@ -10,13 +10,12 @@ flutter run -t lib/main_verified.dart
 
 Both apps share one Android/iOS shell; `main.dart` remains the anonymous default.
 Enter your API origin and public Chat App ID. The anonymous example
-uses anonymous mode with platform secure storage, opens `ChatScreen`, and revokes
-the session when you return while retaining the anonymous installation proof.
+uses anonymous mode with platform secure storage, opens the messenger, and revokes
+the session when you select **End session** while retaining the anonymous installation proof.
 Check the first-use option only when creating an identity is intended. The separate
 recovery option explicitly starts fresh after credential loss; it cannot restore
 lost history. Android backup exclusions and iOS Keychain entitlements are included.
-No secrets belong in its configuration. See the repository README for verified
-identity integration and preview limitations.
+No secrets belong in its configuration. See [Verified host integration](#verified-host-integration) for the signed-in flow.
 
 
 To exercise attachments, enter the exact public storage origin used by the
@@ -33,18 +32,18 @@ Enable **Keep attachments securely for restart recovery** to use the package's
 native protected-file adapter. Selected files may then queue offline after session
 initialization and resume only in the foreground. The SDK restores the original
 conversation selection and any frozen attachment-send payload after process restart.
-Normal Back navigation logs out and deliberately deletes pending managed work;
-for restart testing, terminate/relaunch while the chat is open. Native private-file
+Closing chat keeps the client and draft. **End session** logs out and clears
+pending managed work. To test restart recovery, terminate and relaunch while chat is open. Native private-file
 protection, lock behavior, backup exclusion and real process-death testing remain
 part of device acceptance, not the widget-test result.
 
 For a host-authenticated upgrade, call `client.mergeAnonymousIdentity` with a
 fresh-token callback and the authenticated account's stable `identityKey` after
 explicit user intent. Resolve queued sends, attachments and unsent UI drafts first.
-See the SDK README for `recoverIdentityMerge` and process-restart recovery. The anonymous example uses public configuration only; the verified entry point below demonstrates the authenticated host boundary.
+See the [identity merge guide](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/guide.md#explicit-anonymous-to-verified-merge) for `recoverIdentityMerge` and process-restart recovery. The anonymous example uses public configuration only; the verified entry point below demonstrates the authenticated host boundary.
 
 
-Push integration is demonstrated in `../examples/push_adapters/README.md` with
+Push integration is demonstrated in the [push adapter guide](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/examples/push_adapters/README.md) with
 copyable FCM, APNs, and OneSignal host adapters. The basic example intentionally
 requires no provider project credentials. Use the same adapters with either the
 verified token-provider setup or secure anonymous sessions, and recreate them
@@ -56,7 +55,7 @@ Run `lib/main_verified.dart`. Along with the public Chat App ID and API origin,
 enter your host backend's HTTPS identity endpoint and a short-lived **host login
 access token** from your test account. This is not a Protodesk server secret or a
 Chat identity token. The field is obscured and cleared when connecting; the token
-is held in memory until exit/failure. No new environment variables are used.
+is held in memory until End session or connection failure. No new environment variables are used.
 
 The host-owned endpoint is an example contract, not an existing Protodesk route:
 
@@ -83,9 +82,9 @@ this adapter with your existing host API/auth client, including its login/sessio
 refresh flow; the manual token field is for local integration testing only.
 
 The backend-provided account key partitions the SDK's secure session and queued
-work. Back navigation revokes the current Chat session and deletes pending managed
-work before returning to setup; it does not log out your host account. To switch
-accounts, leave chat, sign into the other host account, and reconnect with its
+work. Closing the messenger keeps the client and draft available to reopen. **End session**
+revokes the current Chat session and deletes pending managed work. It does not
+log out your host account. To switch accounts, end the session, sign into the other host account, and reconnect with its
 host session. Process restart requires host authentication again before opening
 verified chat, then the SDK may restore that account's secure state. It never
 falls back to anonymous mode after a verified authentication failure.
@@ -107,4 +106,4 @@ open until run with your own configuration.
 Native adapter/UI integration tests are in `integration_test/chat_native_test.dart`.
 Run them with `flutter test integration_test/chat_native_test.dart -d <device-id>`;
 run `integration_test/protected_files_test.dart` separately on physical hardware;
-see [testing guide](../docs/testing.md) for coverage and device acceptance limits.
+see [testing guide](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/testing.md) for coverage and device acceptance limits.

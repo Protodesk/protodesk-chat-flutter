@@ -32,12 +32,13 @@ flutter pub get
 flutter pub publish --dry-run
 ```
 
-Staging preserves the source publication block and removes it only in the copy.
-It copies allowlisted source types, rejects linked inputs, and excludes local
+Staging checks the package version against the changelog. It copies allowlisted
+source files, rejects linked inputs, and excludes local
 build output and credential file types. Review the printed manifest and package
 contents before any eventual publication; allowlisting cannot detect secrets
-embedded in ordinary source code. Repository `docs/` becomes `doc/guides/`, and
-`examples/push_adapters/` becomes `example/push_adapters/`. The package includes
+embedded in ordinary source code. The integration, iOS packaging, presentation and setup guides are copied to
+`doc/guides/`. Contributor docs and comparison images stay in the checkout.
+The staging tool maps `examples/push_adapters/` to `example/push_adapters/`. The package includes
 example Dart sources; use the repository checkout for complete runnable native
 hosts and integration tests.
 
@@ -51,8 +52,7 @@ validation and release candidate", Run workflow). Run it after changing `ios/`,
 `example/ios/` or goldens, or run `bash tool/check_release.sh` locally on a Mac. Tags must equal `v` plus the pubspec version, including prerelease suffixes.
 Successful manual/tag runs produce a candidate archive, manifest, SHA-256 digest,
 and source commit identifier. Validation logs and generated API documentation are
-retained for 14 days. This workflow has not yet been exercised on a remote: the
-SDK checkout has no configured Git remote. It has read-only repository permissions
+retained for 14 days. The workflow has read-only repository permissions
 and no publishing credentials or publication step.
 
 ## Support and remaining release gates

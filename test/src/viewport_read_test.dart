@@ -30,7 +30,11 @@ Future<ProtodeskChatClient> openChat(
   await tester.pumpWidget(
     MaterialApp(
       navigatorKey: navigator,
-      home: ChatScreen(client: client, automaticReadReporting: automatic),
+      home: ChatScreen(
+        initialSection: ChatMessengerSection.messages,
+        client: client,
+        automaticReadReporting: automatic,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -228,7 +232,10 @@ void main() {
             index: value,
             children: [child!, const Text('Other tab')],
           ),
-          child: ChatScreen(client: client),
+          child: ChatScreen(
+            initialSection: ChatMessengerSection.messages,
+            client: client,
+          ),
         ),
       ),
     );

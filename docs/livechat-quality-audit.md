@@ -26,7 +26,7 @@ areas, Dynamic Type and Reduce Motion are honoured.
 
 ## Executable checks (37, all passing)
 
-- 6 views × light/dark: Android 48 dp and iOS 44 pt tap targets, labelled tap
+- 6 views × light/dark in accessibility mode: Android 48 dp and iOS 44 pt tap targets, labelled tap
   targets, and text contrast (`meetsGuideline`).
 - 6 views at 2× (320×640), 3× (320×740) and landscape 2× (740×320) in
   Indonesian, plus right-to-left: no layout overflow or exceptions.
@@ -58,8 +58,7 @@ article on first load (phase 6).
 - **P2 — Home card shadow.** In goldens the soft shadow under Home's contact card
   renders as a flat band; confirm the blur on a device and tune it if it looks
   the same.
-- **Resolved — font weights in goldens.** The refinement pass loads regular,
-  medium and bold Roboto from the pinned SDK. See `ui-refinement.md` for the
+- **Resolved — font weights in goldens.** The refinement pass loads the bundled variable Inter font. See `ui-refinement.md` for the
   subsequent messenger changes and local verification boundaries.
 - **P3 — fixed status colour.** The "Connected" dot is a fixed green; consider a
   theme extension if hosts need to brand it.

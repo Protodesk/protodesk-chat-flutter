@@ -1,6 +1,6 @@
 # Integration guide
 
-Detailed reference for `protodesk_chat`. Start with the [README](../README.md)
+Detailed reference for `protodesk_chat`. Start with the [README](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/README.md)
 for setup; come here for sessions, offline behaviour, attachments, push and
 theming in depth.
 
@@ -111,8 +111,7 @@ on logout and account changes, and late responses are ignored.
 by the web widget (headings, paragraphs, emphasis, HTTPS links, HTTPS raster
 images with size presets, quotes, ordered/unordered/task lists, tables and
 escaped fenced code; raw HTML lines are dropped) and builds an "On this page"
-outline with stable heading IDs. The prebuilt UI for these arrives with the
-livechat-style messenger described in [`docs/livechat-ui-plan.md`](livechat-ui-plan.md).
+outline with stable heading IDs. The messenger renders this content in its Help tab.
 
 ## Conversation context and optional contact email
 
@@ -236,17 +235,14 @@ one persisted identity between multiple independently running engines.
   same device; reinstall is not an identity reset. Use the explicit reset flow.
 - Persistence opt-out is `storage: null` (the default). Switching it off does not
   erase prior stored credentials: reset/logout the persisted client first if the
-  intended action is deletion. No message cache is stored by this version.
+  intended action is deletion. See [Durable realtime and recent history](#durable-realtime-and-recent-history) for the encrypted history checkpoint.
 
 The local tests use a secure-storage test double; actual platform encryption,
 backup exclusion, app signing, and crash atomicity still need device verification.
 
 ## Run the example and checks
 
-Requires Flutter with Dart >=3.12. Local verification on 2026-10-25 used
-Flutter 3.47.5 and Dart 3.13.4: analysis is clean and all 32 SDK tests pass.
-Persistence tests include replacement/ack loss,
-refresh fencing, reset, account partitions, and logout during delayed writes/exchanges. This is evidence for this toolchain, not a broader compatibility claim.
+Use Flutter 3.47.5 and Dart 3.13.4 to reproduce the CI environment.
 
 ```sh
 flutter pub get
@@ -938,13 +934,11 @@ MaterialApp(
 );
 ```
 
-The messenger opens on Home (`initialSection`): the Chat App's header title and
-a "Continue conversation" or "Send us a message" card, the most recent other
-conversation, and configured HTTPS links. A bottom navigation switches between
-Home and Messages, with the unread total on Messages; it is hidden inside a
-conversation. Pass `onOpenLink` (for example `url_launcher`'s `launchUrl`) to
-show and open those links; without it they are hidden. `openChat` accepts
-`initialSection` and `onOpenLink` too.
+Reopening chat on the same client and navigator restores the screen and unsent draft. On the first open, chat resumes the latest conversation. A new visitor sees the configured
+pre-chat questions or the greeting and composer. The first send or attachment
+selection creates the conversation. To open a specific tab, pass
+`initialSection: ChatMessengerSection.home`, `.messages`, or `.help`.
+Pass `onOpenLink` to open configured HTTPS links from Home or Help.
 
 When the Chat App has published Help content, a Help tab and Home's "Find an
 answer" panel appear (search plus up to three featured articles, or topics).
@@ -953,16 +947,20 @@ article counts, collection and all-article listings with "Load more", and
 articles with "On this page", Compact Help Markdown (headings, lists, tasks,
 quotes, tables, copyable code, HTTPS images), related articles, a "Contact
 support" hand-off that starts a conversation, a language menu when the Help
-Center has several locales, and "Open in Help Center" via `onOpenLink`. Back
+Center has several locales, and "Open in Help Center" via `onOpenLink`. Help
+labels follow the active content language for English, Indonesian and Thai. Back
 (button or system gesture) walks the Help stack first. The tab is hidden when
 Help is disabled or the server reports `chat.help_center_unavailable`.
 
-Phones get a bottom navigation bar; layouts 840 px or wider get a navigation
-rail with the content in a centred 720 px column. At very large text sizes a
+Home, Messages and Help use bottom tabs. The conversation replaces the tabs.
+At widths above 480 logical pixels, the messenger opens in a 380 by 620 panel
+on the configured launcher side. An article can expand to 760 pixels.
+Use `ChatLauncherButton` with a localized `label` and an `onPressed` callback
+that calls `client.openChat(context)` for the floating entry point. At very large text sizes a
 conversation scrolls as a whole so the composer stays reachable.
 `test/src/messenger_quality_test.dart` checks tap targets, labels and contrast in
 every view and theme, plus 2×/3× text, landscape and right-to-left layout; see
-`docs/livechat-quality-audit.md`.
+[UI audit](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/livechat-quality-audit.md).
 
 Without a `theme`, the messenger uses the Chat App's brand colour and preferred
 colour scheme from `getConfiguration()` once loaded (falling back to the host
@@ -974,23 +972,19 @@ English and Indonesian follow the host locale, with English fallback. To scope
 branding or wording to chat, pass `ChatScreen(theme: ..., localizations:
 ChatLocalizations(const Locale('id'), overrides: {ChatText.support: 'Bantuan'}),
 client: client)`. `ChatTheme.light/dark` accept `brandColor`, `fontFamily` and
-`textTheme`. The theme mirrors the Protodesk mobile app's design system: zinc
-neutrals, hairline borders, filled fields, 8 px buttons, flat 12–16 px cards and
-neutral navigation, with the brand colour in place of the app's blue accent. The
-brand fills buttons and badges exactly; the customer's bubbles use a light brand
-tint. Text, links, icons and focus rings use `ChatBrandColors.foreground`, the
-brand shifted just enough for 4.5:1 contrast on the surface. The SDK downloads
-no fonts; pass Inter through `fontFamily` to match the app.
-provide fonts through your app assets. Locale/theme changes preserve the draft
+`textTheme`. The theme uses the web widget's light and dark surfaces, borders,
+and branded customer bubbles. On Android the default is system Roboto, the font Chrome renders inside the website’s chat frame. Other platforms use bundled Inter, including italics. Hosts can override the font family. Locale/theme changes preserve the draft
 and current conversation. Customer messages, filenames, and server subjects are
 not translated. Machine-readable SDK errors remain available to the host while
 the prebuilt screen displays localized recovery text.
 
-The screen targets WCAG 2.2 AA on Android/iOS: protected 48-pixel control targets,
-named previews, status announcements, keyboard focus, wrapping actions, enlarged
-text, and reduced-motion previews. Host themes retain their colors/type; validate
+Default controls use the website’s dimensions and white text on branded actions.
+System high contrast or an explicit `theme: ChatTheme.accessible(ChatTheme.light())`
+enables larger touch targets and contrasting button text. Both modes support
+named previews, status announcements, keyboard focus, enlarged text and reduced
+motion. Validate
 custom contrast and typography. Physical VoiceOver/TalkBack and complete host
-navigation acceptance remain required. See review and acceptance boundaries (`docs/ui-accessibility.md`).
+navigation acceptance remain required. See review and acceptance boundaries ([accessibility checks](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/ui-accessibility.md)).
 
 ## Runnable host examples
 
@@ -1016,13 +1010,13 @@ include a **Check setup (offline)** action. No new environment variables are nee
 `flutter test` includes reviewed UI golden baselines and anonymous/verified real
 HTTP/WebSocket fixture tests. The example's `integration_test/chat_native_test.dart`
 exercises actual native secure storage, queued-send recovery and account
-isolation. Protected-file acceptance has a separate physical-device harness. See test commands and acceptance boundaries (`docs/testing.md`).
+isolation. Protected-file acceptance has a separate physical-device harness. See test commands and acceptance boundaries ([testing guide](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/testing.md)).
 
 ## Release preparation
 
 Run `bash tool/check_release.sh` with Flutter 3.47.5 / Dart 3.13.4 to validate
 the SDK, examples, API docs, and an isolated pub.dev candidate. Publication still
-needs the steps in `docs/releasing.md`, which also covers artifacts, the supported
+needs the steps in [release guide](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/releasing.md), which also covers artifacts, the supported
 toolchain, and physical-device release gates.
 
 ## License
@@ -1036,7 +1030,7 @@ own licenses.
 
 With `protodesk_chat_ui.dart`, call `await client.openChat(context)` to wait for
 initial readiness and present a client-bound Material route with a close button.
-Dismissal preserves the session. `client.openHelpCenter(context)` opens on the
+Dismissal preserves the session, open screen and draft in memory. `client.openHelpCenter(context)` opens on the
 Help tab and `client.openHelpCenterArticle(context, articleId)` on one published
 article (its public Help API ID; Back returns to the Help home). Both fall back to
 Home when the Chat App has no published Help. `ChatMessenger(initialSection:,
@@ -1050,4 +1044,4 @@ Navigator selection, options, and ownership semantics.
 The prebuilt messenger uses a compact optional email prompt, a draft-aware send
 control, visible selected navigation and unread conversation states, and a
 localized search-clear action. Starting a conversation stays above the history
-list. See `docs/ui-refinement.md` for the visual changes and verification scope.
+list. See [UI refinement notes](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/ui-refinement.md) for the visual changes and verification scope.

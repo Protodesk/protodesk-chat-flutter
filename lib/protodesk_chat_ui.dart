@@ -7,3 +7,4 @@ export 'src/localizations.dart';
 export 'src/theme.dart';
 
 export 'src/open_chat.dart';
+export 'src/launcher_button.dart';
