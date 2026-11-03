@@ -32,6 +32,8 @@ cp build/android-audit/android-help.png screenshots/help.png
 cp build/android-audit/android-dark.png screenshots/dark-conversation.png
 ```
 
+Use absolute HTTPS image URLs in the README so pub.dev can display the gallery.
+When you replace a capture, point its URL at the Git revision containing the new PNG.
 Review the four images at phone size. Update the descriptions in `pubspec.yaml`
 and README alt text if the scenes change. The separate [Android comparison](docs/android-website-comparison.md)
 records the native and website views side by side.

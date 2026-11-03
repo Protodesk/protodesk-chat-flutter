@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Fix the four screenshots in the pub.dev README gallery and its license links.
+
 ## 0.1.3
 
 - Reopen chat and Help on the same screen, including an unsent message or an open article.
