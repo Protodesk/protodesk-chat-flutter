@@ -97,14 +97,11 @@ was removed. `protected_files_test.dart` remains a required hardware acceptance
 test, not a passing simulator result. [Apple's protection type documentation](https://developer.apple.com/documentation/foundation/fileprotectiontype)
 defines the protection level this adapter requires.
 
-## Local results (2026-10-25)
+## iOS simulator coverage
 
-- SDK suite: 307 tests passed after the messenger UI refinement, including contact disclosure/draft retention, search clearing, and empty-draft send states; analysis is clean. All 12 reviewed golden comparisons and the accessibility/layout matrix are included.
-- Example suite: 11 tests passed; SDK/example analysis clean.
-- iPhone 17 Pro / iOS 26.5 simulator: the Keychain-backed outbox/account-isolation/UI
-  integration test passed after separating the unsupported file-protection dependency.
-- Protected-file hardware suite: added, but not passed on physical Android/iOS.
-  The simulator rejection above is recorded as a limitation, not a successful test.
+The Keychain-backed outbox, account isolation, and UI integration checks passed
+on the iPhone 17 Pro simulator with iOS 26.5. Protected-file recovery still
+requires a physical device.
 
 The iOS plugin supports Swift Package Manager and CocoaPods. The example app
 builds with Swift Package Manager; the integration test above also passed with

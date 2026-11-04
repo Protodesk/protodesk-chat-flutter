@@ -3,6 +3,8 @@
 Use the Flutter version pinned in CI (currently 3.47.5). The public client and
 widget libraries live in `lib/`. The runnable Android and iOS host is in
 `example/`, and optional notification adapters live in `examples/push_adapters/`.
+Maintainers use `tool/` to run release checks, stage the pub.dev package, and
+capture screenshots. The published package excludes these scripts.
 
 ## Check a change
 
@@ -37,6 +39,9 @@ When you replace a capture, point its URL at the Git revision containing the new
 Review the four images at phone size. Update the descriptions in `pubspec.yaml`
 and README alt text if the scenes change. The separate [Android comparison](docs/android-website-comparison.md)
 records the native and website views side by side.
+
+Older published READMEs still load the SVGs in `docs/diagrams/` from the main
+branch. Keep those filenames available when updating the gallery.
 
 ## Prepare a release
 

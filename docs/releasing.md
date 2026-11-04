@@ -84,11 +84,3 @@ changelog describes as simulator-tested; complete it before `1.0.0`.
 
 Automatic publishing can later use pub.dev trusted publishing/OIDC instead of a
 long-lived token. It is intentionally not configured by this candidate workflow.
-
-## Latest local packaging validation
-
-On 2026-10-25, the Apache-2.0 candidate passed `flutter pub publish --dry-run`
-with zero warnings (173 KB compressed archive, including the Swift Package
-Manager and CocoaPods iOS sources and the privacy manifest). LICENSE and NOTICE were checked
-against their source copies. Three staging safety tests passed. This is local
-package validation, not confirmation of publisher ownership or remote CI success.

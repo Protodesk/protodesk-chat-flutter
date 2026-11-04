@@ -3,6 +3,9 @@
 build/
 coverage/
 
+# Resolve the SDK library's dependencies locally. Examples keep their lockfiles.
+/pubspec.lock
+
 # Flutter golden mismatch diagnostics (baselines remain tracked).
 test/**/failures/
 
