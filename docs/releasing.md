@@ -48,7 +48,8 @@ hosts and integration tests.
 ## CI and candidate artifacts
 
 `.github/workflows/checks.yml` runs the local gate on Linux for every pull
-request and push to main; there it skips golden pixels and iOS builds.
+request and push to main. Separate jobs run the non-golden tests and build the
+Android APK and iOS simulator app with Flutter 3.38.1.
 `.github/workflows/release-checks.yml` runs the full gate on macOS with the same
 pinned Flutter version only for version tags and manual runs (Actions, "SDK
 validation and release candidate", Run workflow). Run it after changing `ios/`,
@@ -60,8 +61,8 @@ and no publishing credentials or publication step.
 
 ## Support and remaining release gates
 
-The declared minimum toolchain is Flutter 3.47.5 / Dart 3.13.4, matching local
-validation. Supported platforms are Android and iOS; native metadata declares
+The minimum supported toolchain is Flutter 3.38.1 with Dart 3.10.0. CI also
+checks the newer Flutter 3.47.5 release and golden baseline. Supported platforms are Android and iOS; native metadata declares
 Android API 24 and iOS 13.0 minimums. Those declarations are not physical-device
 acceptance evidence. See `testing.md` for exact tested boundaries, golden baseline
 requirements, and physical device checks. iOS secure-storage simulator acceptance

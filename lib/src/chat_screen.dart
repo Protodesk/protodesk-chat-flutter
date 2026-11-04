@@ -100,6 +100,10 @@ class ChatMessenger extends StatefulWidget {
   State<ChatMessenger> createState() => _ChatScreenState();
 }
 
+// Flutter 3.38 exposes the inherited ticker state through of().
+// ignore: deprecated_member_use
+bool _tickersEnabled(BuildContext context) => TickerMode.of(context);
+
 class _ChatScreenState extends State<ChatMessenger>
     with WidgetsBindingObserver
     implements MessengerLocation {
@@ -269,7 +273,7 @@ class _ChatScreenState extends State<ChatMessenger>
       !_picking &&
       !_previewing &&
       !_scrollingMessages &&
-      TickerMode.valuesOf(context).enabled &&
+      _tickersEnabled(context) &&
       ModalRoute.of(context)?.isCurrent != false &&
       (WidgetsBinding.instance.lifecycleState == null ||
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed);
@@ -2511,7 +2515,7 @@ class _ChatStatusState extends State<_ChatStatus> {
       if (!mounted ||
           Theme.of(context).platform != TargetPlatform.iOS ||
           !MediaQuery.supportsAnnounceOf(context) ||
-          !TickerMode.valuesOf(context).enabled ||
+          !_tickersEnabled(context) ||
           ModalRoute.of(context)?.isCurrent == false ||
           (WidgetsBinding.instance.lifecycleState != null &&
               WidgetsBinding.instance.lifecycleState !=

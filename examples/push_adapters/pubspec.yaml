@@ -2,8 +2,8 @@ name: protodesk_push_adapters
 description: Copyable host-owned push adapters, separate from the core SDK.
 publish_to: none
 environment:
-  sdk: '>=3.13.4 <4.0.0'
-  flutter: '>=3.47.5'
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: '>=3.38.1'
 dependencies:
   flutter:
     sdk: flutter

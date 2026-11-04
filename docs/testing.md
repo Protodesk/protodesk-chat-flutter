@@ -45,6 +45,24 @@ to silence a failure. Ordinary runs must not use `--update-goldens`. Mismatch im
 appear in a `failures/` directory beside the golden test and are ignored by Git.
 Goldens check pixels; semantic/contrast/keyboard tests remain separate and necessary.
 
+## Minimum Flutter version
+
+CI analyzes the SDK and both examples and runs their non-golden tests on Flutter
+3.38.1 (Dart 3.10.0). It also builds the Android debug APK and iOS simulator app
+from `example/`. Flutter 3.38.0 bundles a Dart prerelease that cannot resolve
+the SDK’s secure-storage dependency.
+
+On an Apple silicon Mac with Xcode 27, Flutter 3.38.1’s universal simulator
+build can fail while verifying architectures with `lipo`. To test the native
+arm64 simulator build from `example/`, run:
+
+```sh
+mkdir -p build
+printf '%s\n' 'ARCHS[sdk=iphonesimulator*] = arm64' \
+  'IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator*] = 15.0' > build/arm-simulator.xcconfig
+XCODE_XCCONFIG_FILE="$PWD/build/arm-simulator.xcconfig" flutter build ios --simulator --debug
+```
+
 ## Native integration harness
 
 See the [Pixel 7a side-by-side comparison](android-website-comparison.md) for the website and native captures and the Android replay command.

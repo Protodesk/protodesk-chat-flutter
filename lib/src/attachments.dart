@@ -264,27 +264,33 @@ final class ChatAttachmentDraft {
   final List<String> uploadIds;
 }
 
-typedef AttachmentRequest = Future<Map<String, dynamic>> Function(
-  String method,
-  String path,
-  Map<String, dynamic>? body,
-  String? key,
-);
+typedef AttachmentRequest =
+    Future<Map<String, dynamic>> Function(
+      String method,
+      String path,
+      Map<String, dynamic>? body,
+      String? key,
+    );
 
 /// Foreground attachment transfers with optional protected-file recovery.
 /// Capabilities stay in memory. Call suspend on backgrounding; managed operations
 /// resume with bounded retries only after an explicit foreground activation.
 final class ChatAttachments {
   ChatAttachments({
-    required this._request,
-    required this._available,
-    required this._operationId,
+    required AttachmentRequest request,
+    required bool Function() available,
+    required String Function() operationId,
     required Set<Uri> storageOrigins,
     ChatAttachmentTransport? transport,
-    this._persistence,
-    this._send,
+    AttachmentPersistence? persistence,
+    Future<ChatMessage> Function(String, String, String, List<String>)? send,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now,
+  }) : _request = request,
+       _available = available,
+       _operationId = operationId,
+       _persistence = persistence,
+       _send = send,
+       _now = now ?? DateTime.now,
        _origins = Set.unmodifiable(storageOrigins),
        _transport = transport ?? NativeChatAttachmentTransport() {
     validateStorageOrigins(_origins);

@@ -1,3 +1,8 @@
+## 0.1.5
+
+- Support Flutter 3.38.1 and Dart 3.10.0 or later in the Dart 3.x series.
+- Document how to open Support from an existing login and clear chat on sign-out, session expiry, or account switch.
+
 ## 0.1.4
 
 - Fix the four screenshots in the pub.dev README gallery and its license links.

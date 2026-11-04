@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -46,4 +47,12 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Flutter 3.38's integration_test selects an Espresso version whose manifests
+// share a namespace. AGP 9 requires distinct namespaces.
+dependencies {
+    constraints {
+        implementation("androidx.test.espresso:espresso-core:3.5.1")
+    }
 }

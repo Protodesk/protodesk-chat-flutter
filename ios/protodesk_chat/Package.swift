@@ -11,15 +11,9 @@ let package = Package(
     products: [
         .library(name: "protodesk-chat", targets: ["protodesk_chat"])
     ],
-    dependencies: [
-        .package(name: "FlutterFramework", path: "../FlutterFramework")
-    ],
     targets: [
         .target(
             name: "protodesk_chat",
-            dependencies: [
-                .product(name: "FlutterFramework", package: "FlutterFramework")
-            ],
             resources: [
                 // Declares the file-metadata reads behind protected attachments.
                 .process("PrivacyInfo.xcprivacy")

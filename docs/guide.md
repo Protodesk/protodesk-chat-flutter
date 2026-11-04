@@ -42,9 +42,12 @@ final client = await initializeChat(ChatClientOptions(
 
 // Mount in a MaterialApp / Navigator. The host owns the client lifetime.
 final screen = ChatScreen(client: client);
-// When the host signs out:
-await client.logout();
-await client.dispose();
+// When the host signs out, expires the login, or switches accounts:
+try {
+  await client.logout();
+} finally {
+  await client.dispose();
+}
 ```
 
 The token provider must call your authenticated host backend, which mints a fresh,

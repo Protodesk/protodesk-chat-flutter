@@ -283,7 +283,8 @@ class _SectionHeading extends StatelessWidget {
           Text(
             title,
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: const FontWeight(750),
+              fontWeight: FontWeight.w700,
+              fontVariations: const [FontVariation.weight(750)],
               height: 1.15,
               letterSpacing: -.45,
             ),
@@ -406,8 +407,9 @@ class _CountBadge extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: scheme.onPrimary),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: scheme.onPrimary),
       ),
     );
   }
@@ -945,7 +947,8 @@ class _HomeIntro extends StatelessWidget {
                         child: Text(
                           title,
                           style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: const FontWeight(750),
+                            fontWeight: FontWeight.w700,
+                            fontVariations: const [FontVariation.weight(750)],
                             height: 1.08,
                             letterSpacing: -.91,
                           ),
@@ -1111,7 +1114,8 @@ class _HomeSectionTitle extends StatelessWidget {
         child: Text(
           text,
           style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: const FontWeight(750),
+            fontWeight: FontWeight.w700,
+            fontVariations: const [FontVariation.weight(750)],
             fontSize: 12,
             height: 1.2,
           ),
@@ -1228,7 +1232,8 @@ class _StartButton extends StatelessWidget {
           textStyle: theme.textTheme.labelLarge?.copyWith(
             fontSize: 13,
             letterSpacing: 0,
-            fontWeight: setup ? const FontWeight(750) : FontWeight.w700,
+            fontWeight: FontWeight.w700,
+            fontVariations: setup ? const [FontVariation.weight(750)] : null,
           ),
         ),
         child: Text(label),

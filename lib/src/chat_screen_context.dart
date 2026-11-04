@@ -322,7 +322,8 @@ class _ContactPromptState extends State<_ContactPrompt> {
       switchOutCurve: Curves.easeOutCubic,
       transitionBuilder: (child, animation) => SizeTransition(
         sizeFactor: animation,
-        alignment: Alignment.topCenter,
+        // ignore: deprecated_member_use // Flutter 3.38 uses axisAlignment.
+        axisAlignment: -1,
         child: FadeTransition(opacity: animation, child: child),
       ),
       layoutBuilder: (current, previous) => Stack(

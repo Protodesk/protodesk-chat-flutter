@@ -56,14 +56,17 @@ bool isProtodeskPush(Object? data, {required String publicChatAppId}) =>
 final class ChatPushNavigation {
   ChatPushNavigation({
     required this.publicChatAppId,
-    required this._isCurrent,
-    required this._isReady,
+    required bool Function() isCurrent,
+    required bool Function() isReady,
     required Stream<ChatClientState> states,
-    required this._resolve,
-    required this._reportOpen,
+    required Future<ChatConversation> Function(String) resolve,
+    required Future<void> Function(String) reportOpen,
     required this.onNavigate,
     this.pendingLifetime = const Duration(minutes: 2),
-  }) {
+  }) : _isCurrent = isCurrent,
+       _isReady = isReady,
+       _resolve = resolve,
+       _reportOpen = reportOpen {
     if (pendingLifetime <= Duration.zero ||
         pendingLifetime > const Duration(minutes: 5)) {
       throw ArgumentError.value(pendingLifetime, 'pendingLifetime');

@@ -260,7 +260,8 @@ abstract final class ChatTheme {
                 : dark
                 ? const Color(0xff71717a)
                 : const Color(0xffa1a1aa),
-            fontWeight: const FontWeight(650),
+            fontWeight: FontWeight.w600,
+            fontVariations: const [FontVariation.weight(650)],
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {

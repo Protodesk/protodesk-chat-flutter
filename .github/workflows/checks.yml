@@ -10,8 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   validate:
-    # Linux runs everything except golden pixels and iOS builds, which need
-    # macOS and run in release-checks.yml.
+    # The macOS release workflow runs the golden and iOS packaging checks.
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -24,3 +23,39 @@ jobs:
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - name: Analyze, test, document and dry-run publish
         run: bash tool/check_release.sh
+  minimum:
+    name: Flutter 3.38.1 / ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Android
+            runner: ubuntu-latest
+          - platform: iOS
+            runner: macos-15
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install minimum Flutter toolchain
+        run: |
+          git clone --depth 1 --branch 3.38.1 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Check SDK and host packages
+        if: matrix.platform == 'Android'
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test --exclude-tags golden
+          (cd example && flutter pub get && flutter analyze && flutter test)
+          (cd examples/push_adapters && flutter pub get && flutter analyze && flutter test)
+      - name: Build Android example
+        if: matrix.platform == 'Android'
+        working-directory: example
+        run: flutter build apk --debug
+      - name: Build iOS example
+        if: matrix.platform == 'iOS'
+        working-directory: example
+        run: flutter build ios --simulator --debug

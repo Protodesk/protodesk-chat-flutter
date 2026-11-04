@@ -1,6 +1,7 @@
 # Contributing to Protodesk Chat for Flutter
 
-Use the Flutter version pinned in CI (currently 3.47.5). The public client and
+Use Flutter 3.47.5 for release checks and golden images. CI also builds
+the Android and iOS examples on Flutter 3.38.1, the minimum supported version. The public client and
 widget libraries live in `lib/`. The runnable Android and iOS host is in
 `example/`, and optional notification adapters live in `examples/push_adapters/`.
 Maintainers use `tool/` to run release checks, stage the pub.dev package, and

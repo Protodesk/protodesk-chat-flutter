@@ -288,8 +288,9 @@ class _HelpSectionState extends State<_HelpSection> {
                   thumbVisibility: true,
                   thumbColor: ChatBrandColors.resolve(theme).borderStrong,
                   child: ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context)
-                        .copyWith(scrollbars: false),
+                    behavior: ScrollConfiguration.of(
+                      context,
+                    ).copyWith(scrollbars: false),
                     child: SingleChildScrollView(
                       key: ValueKey(
                         'help-${_stack.length}-${route.runtimeType}',
@@ -341,7 +342,8 @@ class _HelpSectionState extends State<_HelpSection> {
                     Text(
                       manifest?.name ?? _text(ChatText.helpCenter),
                       style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: const FontWeight(750),
+                        fontWeight: FontWeight.w700,
+                        fontVariations: const [FontVariation.weight(750)],
                         height: 1.15,
                         letterSpacing: -.45,
                       ),
@@ -572,7 +574,8 @@ class _HelpSectionState extends State<_HelpSection> {
                 child: Text(
                   collection?.name ?? _text(ChatText.allArticles),
                   style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: const FontWeight(750),
+                    fontWeight: FontWeight.w700,
+                    fontVariations: const [FontVariation.weight(750)],
                     height: 1.15,
                     letterSpacing: -.45,
                   ),
@@ -749,8 +752,9 @@ class _HelpSearchField extends StatelessWidget {
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(fontSize: home ? 12 : 13),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(fontSize: home ? 12 : 13),
         inputFormatters: [LengthLimitingTextInputFormatter(120)],
         decoration: InputDecoration(
           hintText: hint,
@@ -859,7 +863,8 @@ class _RowArrow extends StatelessWidget {
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
         fontSize: size,
         height: 1,
-        fontWeight: const FontWeight(450),
+        fontWeight: FontWeight.w400,
+        fontVariations: const [FontVariation.weight(450)],
         color: color,
       ),
     ),
@@ -920,7 +925,8 @@ class _HelpCollectionRow extends StatelessWidget {
               Text(
                 '${collection.articleCount}',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: const FontWeight(650),
+                  fontWeight: FontWeight.w600,
+                  fontVariations: const [FontVariation.weight(650)],
                 ),
               ),
               const SizedBox(width: 7),
@@ -983,8 +989,11 @@ class _HelpArticleRow extends StatelessWidget {
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontSize: inlineArrow ? 12 : 13,
                         fontWeight: inlineArrow && !browse
-                            ? const FontWeight(650)
+                            ? FontWeight.w600
                             : FontWeight.w700,
+                        fontVariations: inlineArrow && !browse
+                            ? const [FontVariation.weight(650)]
+                            : null,
                       ),
                     ),
                     if (excerpt.isNotEmpty) ...[
@@ -1101,7 +1110,8 @@ class _HelpHandoff extends StatelessWidget {
               minimumSize: const Size.fromHeight(40),
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
               textStyle: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: const FontWeight(750),
+                fontWeight: FontWeight.w700,
+                fontVariations: const [FontVariation.weight(750)],
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -1264,7 +1274,8 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
                         : scheme.primary,
                     fontSize: 10,
                     height: 1.15,
-                    fontWeight: const FontWeight(750),
+                    fontWeight: FontWeight.w700,
+                    fontVariations: const [FontVariation.weight(750)],
                     letterSpacing: .8,
                   ),
                 ),
@@ -1275,7 +1286,8 @@ class _HelpArticleBodyState extends State<_HelpArticleBody> {
                 child: Text(
                   article.title,
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: const FontWeight(750),
+                    fontWeight: FontWeight.w700,
+                    fontVariations: const [FontVariation.weight(750)],
                     fontSize: 23,
                     letterSpacing: -.805,
                     height: 1.2,

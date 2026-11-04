@@ -32,7 +32,7 @@ flutter run -t lib/main_anonymous.dart
 
 ## Add chat to your app
 
-Requires Flutter 3.47.5 or later, Dart 3.13.4 or later in the 3.x series, and
+Requires Flutter 3.38.1 or later, Dart 3.10.0 or later in the 3.x series, and
 Android API 24+ or iOS 13+. On Android, declare `android.permission.INTERNET` in
 the app’s main manifest. For secure session storage, configure Android backup
 exclusions and iOS Keychain entitlements. [Native host configuration](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/docs/guide.md#native-host-configuration)
@@ -43,9 +43,11 @@ flutter pub add protodesk_chat
 
 ### Connect a signed-in customer
 
-Create one client for the signed-in account. Supply its stable, opaque account
-ID and a callback to your authenticated backend. The backend holds your Chat App
-secret and mints a fresh identity token each time the SDK calls the callback.
+Once your app restores the customer’s login, create a chat client on their
+first tap on Support. Use your existing authenticated HTTP client to call your
+backend. The backend derives the customer’s stable account ID from their login
+and uses the Chat App secret to mint a fresh token for each SDK callback. The
+customer can open chat without signing in again.
 [Example backend contract](https://github.com/Protodesk/protodesk-chat-flutter/blob/main/example/README.md#verified-host-integration)
 
 ```dart
@@ -87,9 +89,14 @@ ChatLauncherButton(
 
 To open Help directly, call `client.openHelpCenter(context)`. Reusing the same
 client and navigator lets customers close and reopen chat with their screen and
-unsent draft intact, or return to the Help article they were reading. On account
-sign-out, call `await client.logout()` and release the client with
-`await client.dispose()` in a `finally` block.
+unsent draft intact, or return to the Help article they were reading. Keep one client per signed-in account and share any in-flight initialization
+between callers.
+
+When the customer signs out, their app login expires, or they switch accounts,
+stop opening chat with the old client. Await `client.logout()` and dispose it in
+a `finally` block. Use a new client and token callback for the next account.
+If the first client is still initializing when the login changes, discard and
+clean up that client before showing Support to the next customer.
 
 ## Integration guides
 
