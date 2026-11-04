@@ -10,7 +10,8 @@ to the Flutter SDK repository.
 
 ## Local validation
 
-Use Flutter 3.47.5 / Dart 3.13.4, then run from the SDK checkout:
+Use Flutter 3.47.5 and Dart 3.13.4. Release staging also requires Python 3 and
+Ruby with its standard YAML and JSON libraries. From the SDK checkout, run
 
 ```sh
 bash tool/check_release.sh
@@ -32,8 +33,10 @@ flutter pub get
 flutter pub publish --dry-run
 ```
 
-Staging checks the package version against the changelog. It copies allowlisted
-source files, rejects linked inputs, and excludes local
+Staging checks the package version against the changelog and fails if required
+files such as `LICENSE`, `NOTICE`, or a declared screenshot are missing. It
+copies only the screenshots named in `pubspec.yaml`. Older README images stay
+in the repository. Staging copies allowlisted source files, rejects linked inputs, and excludes local
 build output and credential file types. Review the printed manifest and package
 contents before any eventual publication; allowlisting cannot detect secrets
 embedded in ordinary source code. The integration, iOS packaging, presentation and setup guides are copied to

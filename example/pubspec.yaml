@@ -2,7 +2,8 @@ name: protodesk_chat_example
 description: Minimal native customer Chat host integration.
 publish_to: none
 environment:
-  sdk: '>=3.12.0 <4.0.0'
+  sdk: '>=3.13.4 <4.0.0'
+  flutter: '>=3.47.5'
 dependencies:
   flutter:
     sdk: flutter

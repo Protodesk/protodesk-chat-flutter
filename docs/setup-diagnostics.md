@@ -20,12 +20,11 @@ final preflight = validateChatSetup(
 print(preflight); // Only fixed check names/statuses, never the input values.
 ```
 
-The default runtime platform comes from `Platform.operatingSystem`, not the UI
-Theme. `runtimePlatform` is an explicit test/cross-build override; overriding it
-does not make another platform supported. This native preview requires Dart
->=3.12 and Flutter with the dependencies in pubspec.yaml; package resolution and
-`flutter analyze` validate that build-time framework boundary. The doctor does
-not inspect SDK installations or certify unsupported web/desktop builds.
+The default runtime platform comes from `Platform.operatingSystem`.
+Use `runtimePlatform` to override it in tests or cross-build checks. The SDK
+supports Android and iOS and requires Dart 3.13.4 or later in the 3.x series
+and Flutter 3.47.5 or later. Pub checks these constraints during dependency
+resolution. The setup validator checks the host configuration at runtime.
 
 After `await client.ready`, request an explicit authenticated capability snapshot:
 

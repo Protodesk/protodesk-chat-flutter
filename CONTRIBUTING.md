@@ -21,8 +21,8 @@ procedure for reviewing intentional golden changes.
 
 ## Update the screenshots
 
-The four PNGs in `screenshots/` are native Android captures used by the README
-and the pub.dev listing. They use public Help content and synthetic conversations.
+The four PNGs listed in `pubspec.yaml` are native Android captures used by the
+README and the pub.dev listing. They use public Help content and synthetic conversations.
 With the example dependencies installed and the Pixel emulator running, capture
 them from the SDK root (substitute your device ID).
 
@@ -40,8 +40,9 @@ Review the four images at phone size. Update the descriptions in `pubspec.yaml`
 and README alt text if the scenes change. The separate [Android comparison](docs/android-website-comparison.md)
 records the native and website views side by side.
 
-Older published READMEs still load the SVGs in `docs/diagrams/` from the main
-branch. Keep those filenames available when updating the gallery.
+Older published READMEs still load `screenshots/dark-offline.png` and the SVGs
+in `docs/diagrams/` from the main branch. Keep those paths available when
+updating the gallery.
 
 ## Prepare a release
 
